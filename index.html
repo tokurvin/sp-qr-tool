@@ -3,517 +3,381 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lot based SP (LP) QR Code Generator</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<title>SP Tools</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f5f5f7;
-    color: #1d1d1f;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f4f6f9;
+    color: #1a1a2e;
     min-height: 100vh;
-    padding: 32px 16px;
-  }
-
-  .container {
-    max-width: 640px;
-    margin: 0 auto;
   }
 
   header {
-    margin-bottom: 32px;
+    background: #1a1a2e;
+    color: #fff;
+    padding: 36px 32px 32px;
   }
-
-  h1 {
-    font-size: 1.6em;
+  .header-inner {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .header-eyebrow {
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-
-  .subtitle {
-    color: #6e6e73;
-    font-size: 0.9em;
-    margin-top: 4px;
-  }
-
-  .card {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-
-  .card h2 {
-    font-size: 0.75em;
-    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #6e6e73;
+    letter-spacing: 1.2px;
+    color: #6366f1;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -.4px;
+    line-height: 1.2;
+  }
+  header p {
+    font-size: 14px;
+    color: rgba(255,255,255,.55);
+    margin-top: 8px;
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  .version-strip {
+    background: #12122a;
+    padding: 10px 32px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .version-strip-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .badge-purple { background: rgba(99,102,241,.2); color: #a5b4fc; }
+  .badge-green  { background: rgba(34,197,94,.15); color: #86efac; }
+  .badge-amber  { background: rgba(251,191,36,.15); color: #fcd34d; }
+  .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .badge-purple .badge-dot { background: #818cf8; }
+  .badge-green  .badge-dot { background: #4ade80; }
+  .badge-amber  .badge-dot { background: #fbbf24; }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 36px 20px 60px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: #94a3b8;
     margin-bottom: 16px;
   }
 
-  .fields {
+  .tools-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
   }
 
-  .field {
+  .tool-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 28px;
+    text-decoration: none;
+    color: inherit;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    transition: box-shadow .15s, transform .15s, border-color .15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .tool-card:hover {
+    box-shadow: 0 8px 30px rgba(99,102,241,.12);
+    transform: translateY(-2px);
+    border-color: #c7d2fe;
+  }
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .tool-card.purple::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+  .tool-card.green::before  { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .tool-card.amber::before  { background: linear-gradient(90deg, #f59e0b, #d97706); }
+
+  .tool-icon {
+    font-size: 28px;
+    margin-bottom: 14px;
+    line-height: 1;
   }
 
-  .field.full { grid-column: 1 / -1; }
-
-  label {
-    font-size: 0.78em;
-    font-weight: 500;
-    color: #6e6e73;
+  .tool-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -.2px;
+    margin-bottom: 6px;
   }
 
-  .label-hint {
-    font-weight: 400;
-    color: #aaa;
+  .tool-desc {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.6;
+    flex: 1;
   }
 
-  input {
-    border: 1.5px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 9px 12px;
-    font-size: 0.95em;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    transition: border-color 0.15s;
-    outline: none;
-    background: white;
+  .tool-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
   }
 
-  input:focus { border-color: #0071e3; }
-  input.valid { border-color: #34c759; }
-  input.invalid { border-color: #ff3b30; background: #fff5f5; }
+  .tool-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
 
-  .output-code {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 1.05em;
-    letter-spacing: 0.03em;
-    background: #f5f5f7;
+  .tag {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #64748b;
+  }
+
+  .tool-arrow {
+    font-size: 18px;
+    color: #cbd5e1;
+    transition: color .15s, transform .15s;
+  }
+  .tool-card:hover .tool-arrow {
+    color: #6366f1;
+    transform: translateX(3px);
+  }
+
+  /* ── Spec section ── */
+  .spec-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+
+  .spec-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #1a1a2e;
+  }
+
+  .spec-code {
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 13px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     padding: 14px 16px;
-    word-break: break-all;
-    line-height: 1.6;
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0;
+    letter-spacing: .3px;
+    line-height: 1.8;
+    overflow-x: auto;
+    white-space: nowrap;
+    margin-bottom: 16px;
   }
 
-  .seg-qty   { color: #0071e3; }
-  .seg-sku   { color: #8e44ad; }
-  .seg-po    { color: #e67e22; }
-  .seg-sep   { color: #aaa; }
-  .seg-ship  { color: #27ae60; }
-  .seg-total { color: #27ae60; }
-  .seg-box   { color: #27ae60; }
-  .seg-check { color: white; background: #1d1d1f; border-radius: 4px; padding: 1px 5px; font-weight: 700; }
-  .seg-check.special { background: #ff9500; }
+  .seg { display: inline; }
+  .s-qty   { color: #2563eb; font-weight: 600; }
+  .s-sku   { color: #7c3aed; font-weight: 600; }
+  .s-po    { color: #d97706; font-weight: 600; }
+  .s-nav   { color: #16a34a; font-weight: 600; }
+  .s-chk   { background: #1a1a2e; color: #fff; border-radius: 3px; padding: 0 4px; font-weight: 700; }
 
-  .code-plain {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 0.9em;
-    color: #6e6e73;
-    margin-top: 8px;
-    word-break: break-all;
-  }
-
-  .copy-btn {
-    margin-top: 12px;
-    padding: 8px 18px;
-    background: #0071e3;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.88em;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .copy-btn:hover { background: #0077ed; }
-  .copy-btn:active { background: #005bb5; }
-  .copy-btn.copied { background: #34c759; }
-
-  .qr-wrap {
-    display: flex;
-    justify-content: center;
-    padding: 12px 0 4px;
-  }
-
-  #qrcode canvas, #qrcode img {
-    border-radius: 8px;
-  }
-
-  .status {
-    font-size: 0.82em;
-    margin-top: 8px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    display: none;
-  }
-  .status.ok  { background: #f0fdf4; color: #16a34a; display: block; }
-  .status.err { background: #fff5f5; color: #dc2626; display: block; }
-
-  .legend {
+  .spec-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 12px;
+    gap: 14px;
   }
-
-  .legend-item {
+  .spec-legend-item {
     display: flex;
     align-items: center;
-    gap: 5px;
-    font-size: 0.78em;
-    color: #6e6e73;
+    gap: 7px;
+    font-size: 12px;
+    color: #475569;
   }
-
-  .dot {
+  .spec-dot {
     width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0;
   }
 
-  .algo-detail {
-    font-size: 0.82em;
-    color: #6e6e73;
-    background: #f5f5f7;
+  .algo-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  @media (max-width: 580px) {
+    .algo-row { grid-template-columns: 1fr; }
+    .tools-grid { grid-template-columns: 1fr; }
+  }
+
+  .algo-item {
+    background: #f8fafc;
     border-radius: 8px;
     padding: 12px 14px;
+    font-size: 12px;
+    color: #475569;
     line-height: 1.6;
   }
-
-  .algo-detail code {
-    background: #e8e8ed;
+  .algo-item strong { color: #1a1a2e; display: block; margin-bottom: 3px; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+  .algo-item code {
+    font-family: "SF Mono", "Fira Code", monospace;
+    background: #e2e8f0;
     padding: 1px 4px;
     border-radius: 3px;
-    font-size: 0.95em;
   }
 
-  .paste-wrap {
-    display: flex;
-    gap: 8px;
-    align-items: stretch;
+  footer {
+    border-top: 1px solid #e2e8f0;
+    padding: 20px 32px;
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
   }
-
-  .paste-wrap input {
-    flex: 1;
-    font-size: 0.88em;
-    letter-spacing: 0.02em;
-  }
-
-  .parse-btn {
-    padding: 9px 16px;
-    background: #1d1d1f;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.88em;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.15s;
-  }
-  .parse-btn:hover { background: #333; }
-
-  .verify-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.82em;
-    font-weight: 600;
-    padding: 5px 10px;
-    border-radius: 6px;
-    margin-top: 10px;
-  }
-  .verify-badge.ok  { background: #f0fdf4; color: #16a34a; }
-  .verify-badge.err { background: #fff5f5; color: #dc2626; }
-  .verify-badge.warn { background: #fffbeb; color: #d97706; }
+  footer a { color: #6366f1; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-eyebrow">SP Tools</div>
+    <h1>Spare Parts QR Tools</h1>
+    <p>Tools for generating and validating spare parts LOT labels using the v3 QR code spec with check digit error detection.</p>
+  </div>
+</header>
+
+<div class="version-strip">
+  <div class="version-strip-inner">
+    <span class="badge badge-purple"><span class="badge-dot"></span>Spec v3 · MOD 29</span>
+    <span class="badge badge-green"><span class="badge-dot"></span>Check digit enabled</span>
+    <span class="badge badge-amber"><span class="badge-dot"></span>QR Version 2 · ECC Medium</span>
+  </div>
+</div>
+
 <div class="container">
 
-  <header>
-    <h1>SP QR Code Generator</h1>
-    <p class="subtitle">Spare parts LOT label · Version 3 spec · Check digit: A–Z + $ % *</p>
-  </header>
+  <div class="section-title">Tools</div>
 
-  <div class="card">
-    <h2>Paste Existing Code</h2>
-    <div class="paste-wrap">
-      <input id="pasteInput" type="text" maxlength="38" placeholder="0130SMAPLP1829POFI-00089162-01-05-01Y" autocomplete="off" spellcheck="false">
-      <button class="parse-btn" onclick="parseCode()">Parse →</button>
-    </div>
-    <div id="verifyBadge" style="display:none"></div>
+  <div class="tools-grid">
+
+    <a href="qr-checker.html" class="tool-card purple">
+      <div class="tool-icon">🔍</div>
+      <div class="tool-title">QR Code Checker</div>
+      <div class="tool-desc">
+        Build or validate a single QR code string field by field. Paste an existing code to verify its check letter, or enter fields manually to generate a new code with live QR preview.
+      </div>
+      <div class="tool-footer">
+        <div class="tool-tags">
+          <span class="tag">Single code</span>
+          <span class="tag">Validate</span>
+          <span class="tag">QR preview</span>
+        </div>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="asn-generator.html" class="tool-card green">
+      <div class="tool-icon">📦</div>
+      <div class="tool-title">ASN Generator</div>
+      <div class="tool-desc">
+        Mass-generate QR codes for a full shipment. Enter the PO number, shipment number, and each SKU with its total quantity and batch size — get a complete ASN table with check digits, downloadable as Excel or CSV.
+      </div>
+      <div class="tool-footer">
+        <div class="tool-tags">
+          <span class="tag">Multi-SKU</span>
+          <span class="tag">Bulk generate</span>
+          <span class="tag">Excel / CSV</span>
+        </div>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
   </div>
 
-  <div class="card">
-    <h2>Code Fields</h2>
-    <div class="fields">
-      <div class="field">
-        <label>Batch Quantity <span class="label-hint">(4 digits)</span></label>
-        <input id="qty" type="text" maxlength="4" placeholder="0130" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="field">
-        <label>SKU <span class="label-hint">(9–11 chars)</span></label>
-        <input id="sku" type="text" maxlength="11" placeholder="SMAPLP1829" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="field">
-        <label>PO Number <span class="label-hint">(e.g. POFI-00089162)</span></label>
-        <input id="po" type="text" maxlength="13" placeholder="POFI-00089162" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="field">
-        <label>Shipment # <span class="label-hint">(01–99)</span></label>
-        <input id="ship" type="text" maxlength="2" placeholder="01" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="field">
-        <label>Total Boxes <span class="label-hint">(01–99)</span></label>
-        <input id="total" type="text" maxlength="2" placeholder="05" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="field">
-        <label>Box Number <span class="label-hint">(01–99)</span></label>
-        <input id="box" type="text" maxlength="2" placeholder="01" autocomplete="off" spellcheck="false">
-      </div>
-    </div>
-  </div>
+  <!-- ── Spec reference ── -->
+  <div class="section-title">Code Format Reference</div>
 
-  <div class="card">
-    <h2>Generated Code</h2>
-    <div class="output-code" id="output">
-      <span style="color:#bbb; font-style:italic; font-family:sans-serif; font-size:0.9em">Fill in the fields above…</span>
-    </div>
-    <div id="status" class="status"></div>
-    <div class="legend">
-      <div class="legend-item"><div class="dot" style="background:#0071e3"></div>Batch qty</div>
-      <div class="legend-item"><div class="dot" style="background:#8e44ad"></div>SKU</div>
-      <div class="legend-item"><div class="dot" style="background:#e67e22"></div>PO number</div>
-      <div class="legend-item"><div class="dot" style="background:#27ae60"></div>Shipment / Total / Box</div>
-      <div class="legend-item"><div class="dot" style="background:#1d1d1f"></div>Check letter</div>
-    </div>
-    <button class="copy-btn" id="copyBtn" onclick="copyCode()">Copy code</button>
-  </div>
+  <div class="spec-card">
+    <div class="spec-title">v3 Format</div>
 
-  <div class="card">
-    <h2>QR Code Preview</h2>
-    <div class="qr-wrap"><div id="qrcode"></div></div>
-  </div>
+    <div class="spec-code">
+<span class="s-qty">0155</span><span class="s-sku">SMAPLP1829</span><span class="s-po">POFI-00090005</span>-<span class="s-nav">01</span>-<span class="s-nav">15</span>-<span class="s-nav">01</span><span class="s-chk">J</span>
+    </div>
 
-  <div class="card">
-    <h2>How the check letter is calculated</h2>
-    <div class="algo-detail">
-      Each character is mapped to a value: <code>0–9 → 0–9</code>, <code>A–Z → 10–35</code>, <code>- → 36</code>.<br><br>
-      A rolling computation runs left to right:<br>
-      <code>acc = (acc × 31 + char_value) mod 29</code><br><br>
-      The result maps to the output alphabet:<br>
-      <code>0–25 → A–Z &nbsp; 26 → $ &nbsp; 27 → % &nbsp; 28 → *</code><br><br>
-      Multiplier 31 is coprime to 29 (a prime), giving guaranteed detection of all single-character errors and adjacent transpositions — including a hyphen shifting position.
+    <div class="spec-legend">
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#2563eb"></div>Batch qty — 4 digits, zero-padded</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#7c3aed"></div>SKU — 9–11 chars, starts with letter</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#d97706"></div>PO number — PO + 2 letters + hyphen + 8 digits</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#16a34a"></div>Shipment # · Total boxes · Box # — all 2-digit</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#1a1a2e"></div>Check letter — A–Z or $ % *</div>
+    </div>
+
+    <div class="algo-row">
+      <div class="algo-item">
+        <strong>Algorithm</strong>
+        <code>acc = (acc × 31 + val(c)) mod 29</code><br>
+        Run left to right over all characters (excluding check letter). Map result to output alphabet.
+      </div>
+      <div class="algo-item">
+        <strong>Output alphabet (29 chars · prime)</strong>
+        <code>A–Z</code> + <code>$</code> <code>%</code> <code>*</code><br>
+        Prime modulus guarantees 100% detection of single-char errors and adjacent transpositions.
+      </div>
+      <div class="algo-item">
+        <strong>Character values</strong>
+        <code>0–9 → 0–9</code> &nbsp; <code>A–Z → 10–35</code> &nbsp; <code>- → 36</code><br>
+        Hyphen is included in the computation, so a shifted hyphen is always detected.
+      </div>
+      <div class="algo-item">
+        <strong>Validation regex</strong>
+        <code>^\d{4}[A-Z][A-Z0-9]{8,10}PO[A-Z]{2}-\d{8}-\d{2}-\d{2}-\d{2}[A-Z$%*]$</code>
+      </div>
     </div>
   </div>
 
 </div>
 
-<script>
-const OUTPUT_ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ$%*'; // 29 chars
+<footer>
+  SP tools · <a href="https://github.com/tokurvin/sp-qr-tool" target="_blank">GitHub</a>
+</footer>
 
-function charVal(c) {
-  if (c >= '0' && c <= '9') return c.charCodeAt(0) - 48;
-  if (c >= 'A' && c <= 'Z') return c.charCodeAt(0) - 65 + 10;
-  if (c === '-') return 36;
-  return null;
-}
-
-function calcCheck(code) {
-  let acc = 0;
-  for (const c of code) {
-    const v = charVal(c);
-    if (v === null) return null;
-    acc = (acc * 31 + v) % 29;
-  }
-  return OUTPUT_ALPHA[acc];
-}
-
-const REGEX = /^\d{4}[A-Z][A-Z0-9]{8,10}PO[A-Z]{2}-\d{8}-\d{2}-\d{2}-\d{2}[A-Z$%*]$/;
-
-let currentCode = '';
-let qrInstance = null;
-
-function validate(id, ok) {
-  const el = document.getElementById(id);
-  el.classList.toggle('valid', ok);
-  el.classList.toggle('invalid', !ok);
-}
-
-function update() {
-  const qty   = document.getElementById('qty').value.trim().toUpperCase();
-  const sku   = document.getElementById('sku').value.trim().toUpperCase();
-  const po    = document.getElementById('po').value.trim().toUpperCase();
-  const ship  = document.getElementById('ship').value.trim();
-  const total = document.getElementById('total').value.trim();
-  const box   = document.getElementById('box').value.trim();
-
-  const qtyOk   = /^\d{4}$/.test(qty);
-  const skuOk   = /^[A-Z][A-Z0-9]{8,10}$/.test(sku);
-  const poOk    = /^PO[A-Z]{2}-\d{8}$/.test(po);
-  const shipOk  = /^\d{2}$/.test(ship) && parseInt(ship) >= 1;
-  const totalOk = /^\d{2}$/.test(total) && parseInt(total) >= 1;
-  const boxOk   = /^\d{2}$/.test(box) && parseInt(box) >= 1 && parseInt(box) <= parseInt(total);
-
-  if (qty)   validate('qty',   qtyOk);
-  if (sku)   validate('sku',   skuOk);
-  if (po)    validate('po',    poOk);
-  if (ship)  validate('ship',  shipOk);
-  if (total) validate('total', totalOk);
-  if (box)   validate('box',   boxOk);
-
-  const outputEl = document.getElementById('output');
-  const statusEl = document.getElementById('status');
-
-  if (!qty && !sku && !po && !ship && !total && !box) {
-    outputEl.innerHTML = '<span style="color:#bbb; font-style:italic; font-family:sans-serif; font-size:0.9em">Fill in the fields above…</span>';
-    statusEl.className = 'status';
-    clearQR();
-    return;
-  }
-
-  if (!qtyOk || !skuOk || !poOk || !shipOk || !totalOk || !boxOk) {
-    outputEl.innerHTML = '<span style="color:#bbb; font-style:italic; font-family:sans-serif; font-size:0.9em">Complete all fields correctly…</span>';
-    statusEl.className = 'status';
-    clearQR();
-    return;
-  }
-
-  const base = `${qty}${sku}${po}-${ship}-${total}-${box}`;
-  const check = calcCheck(base);
-  if (!check) {
-    statusEl.textContent = 'Unexpected character in input';
-    statusEl.className = 'status err';
-    clearQR();
-    return;
-  }
-
-  currentCode = base + check;
-  const isSpecial = ['$','%','*'].includes(check);
-
-  outputEl.innerHTML =
-    `<span class="seg-qty">${qty}</span>` +
-    `<span class="seg-sku">${sku}</span>` +
-    `<span class="seg-po">${po}</span>` +
-    `<span class="seg-sep">-</span>` +
-    `<span class="seg-ship">${ship}</span>` +
-    `<span class="seg-sep">-</span>` +
-    `<span class="seg-total">${total}</span>` +
-    `<span class="seg-sep">-</span>` +
-    `<span class="seg-box">${box}</span>` +
-    `<span class="seg-check${isSpecial ? ' special' : ''}">${check}</span>`;
-
-  const valid = REGEX.test(currentCode);
-  statusEl.textContent = valid
-    ? `✓ Valid code — ${currentCode.length} characters`
-    : '✗ Code failed regex validation';
-  statusEl.className = 'status ' + (valid ? 'ok' : 'err');
-
-  renderQR(currentCode);
-}
-
-function renderQR(text) {
-  const el = document.getElementById('qrcode');
-  el.innerHTML = '';
-  qrInstance = new QRCode(el, {
-    text: text,
-    width: 200,
-    height: 200,
-    correctLevel: QRCode.CorrectLevel.M,
-    colorDark: '#1d1d1f',
-    colorLight: '#ffffff',
-  });
-}
-
-function clearQR() {
-  document.getElementById('qrcode').innerHTML = '';
-  currentCode = '';
-}
-
-function copyCode() {
-  if (!currentCode) return;
-  navigator.clipboard.writeText(currentCode).then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = 'Copy code';
-      btn.classList.remove('copied');
-    }, 1800);
-  });
-}
-
-['qty','sku','po','ship','total','box'].forEach(id => {
-  document.getElementById(id).addEventListener('input', update);
-});
-
-// Also parse on Enter in paste field
-document.getElementById('pasteInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') parseCode();
-});
-
-const PARSE_REGEX = /^(\d{4})([A-Z][A-Z0-9]{8,10})(PO[A-Z]{2}-\d{8})-(\d{2})-(\d{2})-(\d{2})([A-Z$%*])?$/;
-
-function parseCode() {
-  const raw = document.getElementById('pasteInput').value.trim().toUpperCase();
-  const badge = document.getElementById('verifyBadge');
-
-  if (!raw) {
-    badge.style.display = 'none';
-    return;
-  }
-
-  const m = raw.match(PARSE_REGEX);
-  if (!m) {
-    badge.className = 'verify-badge err';
-    badge.textContent = '✗ Could not parse — does not match expected format';
-    badge.style.display = 'inline-flex';
-    return;
-  }
-
-  const [, qty, sku, po, ship, total, box, existingCheck] = m;
-
-  // Populate fields
-  document.getElementById('qty').value   = qty;
-  document.getElementById('sku').value   = sku;
-  document.getElementById('po').value    = po;
-  document.getElementById('ship').value  = ship;
-  document.getElementById('total').value = total;
-  document.getElementById('box').value   = box;
-
-  // Trigger update to re-render output + QR
-  update();
-
-  // Verify or note missing check
-  if (existingCheck) {
-    const base = `${qty}${sku}${po}-${ship}-${total}-${box}`;
-    const correct = calcCheck(base);
-    if (existingCheck === correct) {
-      badge.className = 'verify-badge ok';
-      badge.textContent = `✓ Check letter "${existingCheck}" is correct`;
-    } else {
-      badge.className = 'verify-badge err';
-      badge.textContent = `✗ Check letter "${existingCheck}" is WRONG — expected "${correct}"`;
-    }
-  } else {
-    badge.className = 'verify-badge warn';
-    badge.textContent = '⚠ No check letter in pasted string — calculated and added below';
-  }
-  badge.style.display = 'inline-flex';
-}
-</script>
 </body>
 </html>

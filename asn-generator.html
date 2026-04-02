@@ -227,6 +227,28 @@
   }
 
   .error-msg { color: #ef4444; font-size: 12px; margin-top: 8px; display: none; }
+
+  /* ── Editable batch qty in results ── */
+  .editable-qty {
+    width: 62px;
+    padding: 4px 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 13px;
+    text-align: right;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .editable-qty:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+  .editable-qty.qty-warning { border-color: #f59e0b; background: #fffbeb; }
+  .qty-total-note {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+  .qty-total-note.qty-mismatch { color: #f59e0b; font-weight: 600; }
+  .qty-total-note.qty-match { color: #22c55e; }
 </style>
 </head>
 <body>
@@ -249,12 +271,12 @@
     <div class="global-row">
       <div>
         <label for="po-number">PO Number</label>
-        <input type="text" id="po-number" placeholder="POFI-00090005" spellcheck="false" autocomplete="off">
+        <input type="text" id="po-number" placeholder="POFI-00090005" spellcheck="false" autocomplete="off" autocorrect="off">
         <div class="hint">Format: PO + 2 letters + hyphen + 8 digits</div>
       </div>
       <div>
         <label for="shipment-num">Shipment #</label>
-        <input type="number" id="shipment-num" min="1" max="99" value="1" placeholder="01">
+        <input type="number" id="shipment-num" min="1" max="99" value="1" placeholder="01" autocomplete="off">
         <div class="hint">1–99</div>
       </div>
     </div>
@@ -368,9 +390,9 @@ function addSkuRow(sku = '', totalQty = '', batchQty = '') {
   const idx = rowCount;
   tr.innerHTML = `
     <td style="color:#94a3b8;font-size:12px;text-align:center">${rowCount}</td>
-    <td><input type="text" id="sku-${idx}" value="${sku}" placeholder="SMAPLP1234" spellcheck="false" style="width:148px"></td>
-    <td><input type="number" id="tqty-${idx}" value="${totalQty}" placeholder="2325" min="1" style="width:118px"></td>
-    <td><input type="number" id="bqty-${idx}" value="${batchQty}" placeholder="155" min="1" style="width:140px"></td>
+    <td><input type="text" id="sku-${idx}" value="${sku}" placeholder="SMAPLP1234" spellcheck="false" autocomplete="off" style="width:148px"></td>
+    <td><input type="number" id="tqty-${idx}" value="${totalQty}" placeholder="2325" min="1" autocomplete="off" style="width:118px"></td>
+    <td><input type="number" id="bqty-${idx}" value="${batchQty}" placeholder="155" min="1" autocomplete="off" style="width:140px"></td>
     <td><button class="btn-icon" onclick="removeRow(${idx})" title="Remove">×</button></td>
   `;
   tbody.appendChild(tr);
@@ -473,14 +495,16 @@ function generate() {
   let totalQtyAll = 0;
   let totalBoxesAll = 0;
 
-  skuRows.forEach(({ sku, tqty, bqty }) => {
+  skuRows.forEach(({ sku, tqty, bqty }, skuIdx) => {
     const totalBoxes = Math.ceil(tqty / bqty);
 
-    // Separator row
+    // Separator row with total tracker
     const sepTr = document.createElement('tr');
     sepTr.className = 'sep-row';
-    sepTr.innerHTML = `<td colspan="8">SKU ${sku} · ${totalQty(tqty, bqty, totalBoxes)} units in ${totalBoxes} box${totalBoxes !== 1 ? 'es' : ''}</td>`;
+    sepTr.innerHTML = `<td colspan="8">SKU ${sku} · <span id="sku-total-${skuIdx}">${tqty}</span> / ${tqty} units in ${totalBoxes} box${totalBoxes !== 1 ? 'es' : ''} <span class="qty-total-note" id="sku-note-${skuIdx}"></span></td>`;
     tbody.appendChild(sepTr);
+
+    const skuRowStart = generatedRows.length;
 
     for (let box = 1; box <= totalBoxes; box++) {
       const isLast = box === totalBoxes;
@@ -491,17 +515,19 @@ function generate() {
       const checkLetter = code.slice(-1);
       const baseCode = code.slice(0, -1);
 
-      // Table row
+      const rowIdx = generatedRows.length;
+
+      // Table row with editable qty
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${globalBatch}</td>
-        <td>${qty}</td>
+        <td><input type="number" class="editable-qty" id="rqty-${rowIdx}" value="${qty}" min="1" max="9999" autocomplete="off" data-row="${rowIdx}" data-sku-idx="${skuIdx}" data-sku-start="${skuRowStart}" data-sku-tqty="${tqty}"></td>
         <td><code>${sku}</code></td>
         <td><code>${po}</code></td>
         <td>${String(shipNum).padStart(2,'0')}</td>
         <td>${totalBoxes}</td>
         <td>${box}/${totalBoxes}</td>
-        <td class="mono">${baseCode}<span class="check-letter">${checkLetter}</span></td>
+        <td class="mono" id="rcode-${rowIdx}">${baseCode}<span class="check-letter">${checkLetter}</span></td>
       `;
       tbody.appendChild(tr);
 
@@ -517,6 +543,7 @@ function generate() {
         'QR Code String (v3)': code,
         'Package Sticker': code,
         'Battery Sticker': code,
+        _sku: sku, _po: po, _shipNum: shipNum, _totalBoxes: totalBoxes, _box: box, _skuIdx: skuIdx, _skuTqty: tqty, _skuRowStart: skuRowStart, _origBatchQty: bqty,
       });
 
       globalBatch++;
@@ -524,6 +551,8 @@ function generate() {
     }
     totalBoxesAll += totalBoxes;
   });
+
+  // Event delegation is set up once via initQtyEditing()
 
   // Stats
   const statsBar = document.getElementById('stats-bar');
@@ -543,6 +572,245 @@ function totalQty(tqty, bqty, totalBoxes) {
 }
 
 // ─────────────────────────────────────────────
+// Live edit of batch qty in results
+// (uses event delegation on result-tbody for reliability)
+// ─────────────────────────────────────────────
+let qtyEditingInitialized = false;
+
+function initQtyEditing() {
+  if (qtyEditingInitialized) return;
+  qtyEditingInitialized = true;
+
+  var tbody = document.getElementById('result-tbody');
+
+  // Recalculate on blur (click away / tab out)
+  tbody.addEventListener('focusout', function(e) {
+    if (e.target.classList.contains('editable-qty')) onQtyEdit(e);
+  });
+
+  // Recalculate on Enter key
+  tbody.addEventListener('keydown', function(e) {
+    if (e.target.classList.contains('editable-qty') && e.key === 'Enter') {
+      e.preventDefault();
+      e.target.blur();
+    }
+  });
+
+  // Recalculate on spinner arrow clicks (detected via change event
+  // only when not currently focused from keyboard typing)
+  tbody.addEventListener('change', function(e) {
+    if (e.target.classList.contains('editable-qty') && !e.target._typing) {
+      onQtyEdit(e);
+    }
+  });
+
+  // Track whether user is typing vs using spinner
+  tbody.addEventListener('keypress', function(e) {
+    if (e.target.classList.contains('editable-qty')) {
+      e.target._typing = true;
+    }
+  });
+  tbody.addEventListener('focusin', function(e) {
+    if (e.target.classList.contains('editable-qty')) {
+      e.target._typing = false;
+    }
+  });
+}
+
+function updateRowDisplay(rowIdx) {
+  var row = generatedRows[rowIdx];
+  if (!row) return;
+  var code = buildCode(row['Batch Qty'], row._sku, row._po, row._shipNum, row._totalBoxes, row._box);
+  row['QR Code String (v3)'] = code;
+  row['Package Sticker'] = code;
+  row['Battery Sticker'] = code;
+
+  // Update qty input
+  var qtyInput = document.getElementById('rqty-' + rowIdx);
+  if (qtyInput && qtyInput !== document.activeElement) {
+    qtyInput.value = row['Batch Qty'];
+  }
+
+  // Update QR code cell
+  var codeEl = document.getElementById('rcode-' + rowIdx);
+  if (codeEl) {
+    var checkLetter = code.slice(-1);
+    var baseCode = code.slice(0, -1);
+    codeEl.innerHTML = baseCode + '<span class="check-letter">' + checkLetter + '</span>';
+  }
+}
+
+function rebuildResultTable() {
+  var tbody = document.getElementById('result-tbody');
+  tbody.innerHTML = '';
+
+  var currentSkuIdx = -1;
+  var globalBatch = 1;
+  var totalBoxesAll = 0;
+  var totalUnits = 0;
+  var skuCount = 0;
+
+  // Count boxes per SKU for headers and box# display
+  var skuBoxCounts = {};
+  for (var i = 0; i < generatedRows.length; i++) {
+    var si = generatedRows[i]._skuIdx;
+    skuBoxCounts[si] = (skuBoxCounts[si] || 0) + 1;
+  }
+
+  for (var i = 0; i < generatedRows.length; i++) {
+    var row = generatedRows[i];
+    var si = row._skuIdx;
+    var newTotalBoxes = skuBoxCounts[si];
+
+    // SKU separator row
+    if (si !== currentSkuIdx) {
+      currentSkuIdx = si;
+      skuCount++;
+      var skuSum = 0;
+      for (var j = 0; j < generatedRows.length; j++) {
+        if (generatedRows[j]._skuIdx === si) skuSum += generatedRows[j]['Batch Qty'];
+      }
+      var sepTr = document.createElement('tr');
+      sepTr.className = 'sep-row';
+      var skuTqty = row._skuTqty;
+      var noteHtml = '';
+      if (skuSum !== skuTqty) {
+        var diff = skuTqty - skuSum;
+        noteHtml = ' <span class="qty-total-note qty-mismatch">' + (diff > 0 ? '(' + diff + ' under)' : '(' + Math.abs(diff) + ' over)') + '</span>';
+      }
+      sepTr.innerHTML = '<td colspan="8">SKU ' + row._sku + ' · ' + skuSum + ' / ' + skuTqty + ' units in ' + newTotalBoxes + ' box' + (newTotalBoxes !== 1 ? 'es' : '') + noteHtml + '</td>';
+      tbody.appendChild(sepTr);
+      totalBoxesAll += newTotalBoxes;
+    }
+
+    // Find this row's position within its SKU (1-based box#)
+    var boxNum = 0;
+    for (var j = 0; j <= i; j++) {
+      if (generatedRows[j]._skuIdx === si) boxNum++;
+    }
+
+    // Update row metadata
+    row._totalBoxes = newTotalBoxes;
+    row._box = boxNum;
+    row['Total Boxes'] = newTotalBoxes;
+    row['Box #'] = boxNum;
+    row['Batch/Box'] = globalBatch;
+
+    // Rebuild QR code with updated box#/totalBoxes
+    var code = buildCode(row['Batch Qty'], row._sku, row._po, row._shipNum, newTotalBoxes, boxNum);
+    row['QR Code String (v3)'] = code;
+    row['Package Sticker'] = code;
+    row['Battery Sticker'] = code;
+
+    var checkLetter = code.slice(-1);
+    var baseCode = code.slice(0, -1);
+
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + globalBatch + '</td>' +
+      '<td><input type="number" class="editable-qty" id="rqty-' + i + '" value="' + row['Batch Qty'] + '" min="1" max="9999" autocomplete="off" data-row="' + i + '" data-sku-idx="' + si + '" data-sku-tqty="' + row._skuTqty + '"></td>' +
+      '<td><code>' + row._sku + '</code></td>' +
+      '<td><code>' + row._po + '</code></td>' +
+      '<td>' + String(row._shipNum).padStart(2, '0') + '</td>' +
+      '<td>' + newTotalBoxes + '</td>' +
+      '<td>' + boxNum + '/' + newTotalBoxes + '</td>' +
+      '<td class="mono" id="rcode-' + i + '">' + baseCode + '<span class="check-letter">' + checkLetter + '</span></td>';
+    tbody.appendChild(tr);
+
+    globalBatch++;
+    totalUnits += row['Batch Qty'];
+  }
+
+  // Update stats bar
+  var statValues = document.querySelectorAll('.stat-value');
+  if (statValues.length >= 1) statValues[0].textContent = skuCount;
+  if (statValues.length >= 2) statValues[1].textContent = totalBoxesAll;
+  if (statValues.length >= 3) statValues[2].textContent = totalUnits.toLocaleString();
+}
+
+function onQtyEdit(e) {
+  var input = e.target;
+  var rowIdx = parseInt(input.getAttribute('data-row'), 10);
+  var skuIdx = parseInt(input.getAttribute('data-sku-idx'), 10);
+  var skuTqty = parseInt(input.getAttribute('data-sku-tqty'), 10);
+
+  var newQty = parseInt(input.value, 10);
+  if (isNaN(newQty) || isNaN(rowIdx)) return;
+  if (newQty < 1) newQty = 1;
+  var clampedQty = Math.min(newQty, 9999);
+  input.value = clampedQty; // normalize displayed value on commit
+
+  var row = generatedRows[rowIdx];
+  if (!row) return;
+  row['Batch Qty'] = clampedQty;
+
+  // Find all rows for this SKU
+  var skuRowIndices = [];
+  for (var i = 0; i < generatedRows.length; i++) {
+    if (generatedRows[i]._skuIdx === skuIdx) {
+      skuRowIndices.push(i);
+    }
+  }
+
+  // Redistribute: all boxes AFTER the edited one get recalculated
+  var editedPos = skuRowIndices.indexOf(rowIdx);
+  if (editedPos >= 0) {
+    var sumBefore = 0;
+    for (var j = 0; j <= editedPos; j++) {
+      sumBefore += generatedRows[skuRowIndices[j]]['Batch Qty'];
+    }
+    var remaining = Math.max(0, skuTqty - sumBefore);
+    var origBatch = row._origBatchQty;
+
+    // Update existing subsequent boxes
+    for (var j = editedPos + 1; j < skuRowIndices.length; j++) {
+      var ri = skuRowIndices[j];
+      var boxQty = Math.min(remaining, origBatch);
+      generatedRows[ri]['Batch Qty'] = boxQty;
+      remaining -= boxQty;
+    }
+
+    // Add new boxes if remaining qty overflows past existing boxes
+    // (insert right after the last row of this SKU in generatedRows)
+    if (remaining > 0) {
+      var insertAfter = skuRowIndices[skuRowIndices.length - 1] + 1;
+      var newRows = [];
+      while (remaining > 0) {
+        var boxQty = Math.min(remaining, origBatch);
+        newRows.push({
+          'Batch/Box': 0, // will be renumbered by rebuildResultTable
+          'Batch Qty': boxQty,
+          'SKU': row._sku,
+          'PO Number': row._po,
+          'Shipment #': String(row._shipNum).padStart(2, '0'),
+          'Total Boxes': 0,
+          'Box #': 0,
+          'QR Code String (v3)': '',
+          'Package Sticker': '',
+          'Battery Sticker': '',
+          _sku: row._sku, _po: row._po, _shipNum: row._shipNum,
+          _totalBoxes: 0, _box: 0, _skuIdx: skuIdx,
+          _skuTqty: skuTqty, _skuRowStart: row._skuRowStart,
+          _origBatchQty: origBatch
+        });
+        remaining -= boxQty;
+      }
+      // Splice new rows into the correct position
+      generatedRows.splice.apply(generatedRows, [insertAfter, 0].concat(newRows));
+    }
+  }
+
+  // Remove rows with 0 qty
+  generatedRows = generatedRows.filter(function(r) { return r['Batch Qty'] > 0; });
+
+  // Rebuild the entire results table with correct box#, total boxes, QR codes
+  rebuildResultTable();
+}
+
+// Initialize event delegation immediately
+initQtyEditing();
+
+// ─────────────────────────────────────────────
 // Downloads
 // ─────────────────────────────────────────────
 function getFilenameBase() {
@@ -555,7 +823,7 @@ function downloadExcel() {
 
   // Build rows for Excel with empty separator rows between SKUs
   const excelRows = [];
-  const headers = Object.keys(generatedRows[0]);
+  const headers = Object.keys(generatedRows[0]).filter(h => h[0] !== '_');
   excelRows.push(headers);
 
   let lastSku = null;
@@ -586,9 +854,29 @@ function downloadExcel() {
   XLSX.writeFile(wb, `${getFilenameBase()}.xlsx`);
 }
 
+// ─────────────────────────────────────────────
+// Page reset — ensure clean state on every load
+// (prevents browser auto-fill from leaking data
+//  between vendors sharing the same URL)
+// ─────────────────────────────────────────────
+window.addEventListener('pageshow', function() {
+  document.getElementById('po-number').value = '';
+  document.getElementById('shipment-num').value = '1';
+  document.getElementById('results').style.display = 'none';
+  generatedRows = [];
+  document.getElementById('result-tbody').innerHTML = '';
+  document.getElementById('stats-bar').innerHTML = '';
+  // Reset SKU inputs
+  document.querySelectorAll('#sku-tbody input').forEach(function(input) {
+    input.value = '';
+    input.classList.remove('invalid');
+  });
+  showError('');
+});
+
 function downloadCSV() {
   if (!generatedRows.length) return;
-  const headers = Object.keys(generatedRows[0]);
+  const headers = Object.keys(generatedRows[0]).filter(h => h[0] !== '_');
   const lines = [headers.join(',')];
   let lastSku = null;
   generatedRows.forEach(row => {

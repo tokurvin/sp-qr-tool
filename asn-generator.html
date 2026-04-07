@@ -467,8 +467,8 @@ function generate() {
 
     if (!sku) continue; // skip blank rows
 
-    if (!/^[A-Z][A-Z0-9]{8,10}$/.test(sku)) {
-      showError(`Row ${i+1}: SKU "${sku}" is invalid. Must be 9–11 alphanumeric chars starting with a letter.`);
+    if (!/^(SM|TB|LT)APLP\d{1,5}$/.test(sku)) {
+      showError(`Row ${i+1}: SKU "${sku}" is invalid. Must be SM/TB/LT + APLP + 1–5 digits (e.g. SMAPLP1829).`);
       skuInput.classList.add('invalid');
       return;
     }

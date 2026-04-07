@@ -551,7 +551,7 @@ function generate() {
         'Box #': box,
         'QR Code String (v3)': code,
         'Package Sticker': code,
-        'Battery Sticker': code,
+        'Spare Part Sticker': code,
         _sku: sku, _po: po, _shipNum: shipNum, _totalBoxes: totalBoxes, _box: box, _skuIdx: skuIdx, _skuTqty: tqty, _skuRowStart: skuRowStart, _origBatchQty: bqty,
       });
 
@@ -632,7 +632,7 @@ function updateRowDisplay(rowIdx) {
   var code = buildCode(row['Batch Qty'], row._sku, row._po, row._shipNum, row._totalBoxes, row._box);
   row['QR Code String (v3)'] = code;
   row['Package Sticker'] = code;
-  row['Battery Sticker'] = code;
+  row['Spare Part Sticker'] = code;
 
   // Update qty input
   var qtyInput = document.getElementById('rqty-' + rowIdx);
@@ -709,7 +709,7 @@ function rebuildResultTable() {
     var code = buildCode(row['Batch Qty'], row._sku, row._po, row._shipNum, newTotalBoxes, boxNum);
     row['QR Code String (v3)'] = code;
     row['Package Sticker'] = code;
-    row['Battery Sticker'] = code;
+    row['Spare Part Sticker'] = code;
 
     var checkLetter = code.slice(-1);
     var baseCode = code.slice(0, -1);
@@ -796,7 +796,7 @@ function onQtyEdit(e) {
           'Box #': 0,
           'QR Code String (v3)': '',
           'Package Sticker': '',
-          'Battery Sticker': '',
+          'Spare Part Sticker': '',
           _sku: row._sku, _po: row._po, _shipNum: row._shipNum,
           _totalBoxes: 0, _box: 0, _skuIdx: skuIdx,
           _skuTqty: skuTqty, _skuRowStart: row._skuRowStart,

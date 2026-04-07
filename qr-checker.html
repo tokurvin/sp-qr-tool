@@ -400,7 +400,7 @@ function calcCheck(code) {
   return OUTPUT_ALPHA[acc];
 }
 
-const REGEX = /^\d{4}[A-Z][A-Z0-9]{8,10}PO[A-Z]{2}-\d{8}-\d{2}-\d{2}-\d{2}[A-Z$%*]$/;
+const REGEX = /^\d{4}(?:SM|TB|LT)APLP\d{1,5}PO[A-Z]{2}-\d{8}-\d{2}-\d{2}-\d{2}[A-Z$%*]$/;
 
 let currentCode = '';
 
@@ -443,8 +443,16 @@ function update() {
   }
 
   if (!qtyOk || !skuOk || !poOk || !shipOk || !totalOk || !boxOk) {
+    const missing = [];
+    if (!qtyOk)   missing.push('Batch Qty');
+    if (!skuOk)   missing.push('SKU');
+    if (!poOk)    missing.push('PO Number');
+    if (!shipOk)  missing.push('Shipment #');
+    if (!totalOk) missing.push('Total Boxes');
+    if (!boxOk)   missing.push('Box Number');
     outputEl.innerHTML = '<span style="color:#bbb; font-style:italic; font-family:sans-serif; font-size:0.9em">Complete all fields correctly…</span>';
-    statusEl.className = 'status';
+    statusEl.textContent = '⚠ Fix: ' + missing.join(', ');
+    statusEl.className = 'status err';
     clearQR();
     return;
   }
@@ -541,7 +549,7 @@ document.getElementById('pasteInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') parseCode();
 });
 
-const PARSE_REGEX = /^(\d{4})([A-Z][A-Z0-9]{8,10})(PO[A-Z]{2}-\d{8})-(\d{2})-(\d{2})-(\d{2})([A-Z$%*])?$/;
+const PARSE_REGEX = /^(\d{4})((?:SM|TB|LT)APLP\d{1,5})(PO[A-Z]{2}-\d{8})-(\d{2})-(\d{2})-(\d{2})([A-Z$%*])?$/;
 
 function parseCode() {
   const raw = document.getElementById('pasteInput').value.trim().toUpperCase();

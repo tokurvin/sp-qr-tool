@@ -318,7 +318,7 @@
         <input id="qty" type="text" maxlength="4" placeholder="0130" autocomplete="off" spellcheck="false">
       </div>
       <div class="field">
-        <label>SKU <span class="label-hint">(9–11 chars)</span></label>
+        <label>SKU <span class="label-hint">(SM/TB/LT + APLP + 1–5 digits)</span></label>
         <input id="sku" type="text" maxlength="11" placeholder="SMAPLP1829" autocomplete="off" spellcheck="false">
       </div>
       <div class="field">
@@ -419,7 +419,7 @@ function update() {
   const box   = document.getElementById('box').value.trim();
 
   const qtyOk   = /^\d{4}$/.test(qty);
-  const skuOk   = /^[A-Z][A-Z0-9]{8,10}$/.test(sku);
+  const skuOk   = /^(SM|TB|LT)APLP\d{1,5}$/.test(sku);
   const poOk    = /^PO[A-Z]{2}-\d{8}$/.test(po);
   const shipOk  = /^\d{2}$/.test(ship) && parseInt(ship) >= 1;
   const totalOk = /^\d{2}$/.test(total) && parseInt(total) >= 1;

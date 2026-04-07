@@ -250,6 +250,45 @@
   .verify-badge.ok  { background: #f0fdf4; color: #16a34a; }
   .verify-badge.err { background: #fff5f5; color: #dc2626; }
   .verify-badge.warn { background: #fffbeb; color: #d97706; }
+
+  .print-btn {
+    margin-top: 12px;
+    padding: 8px 18px;
+    background: #1d1d1f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.88em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .print-btn:hover { background: #333; }
+  .print-btn:disabled { background: #ccc; cursor: default; }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .container > *:not(.print-area) { display: none !important; }
+    .print-area {
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 0;
+    }
+    .print-area .print-code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      margin-top: 20px;
+      color: #000;
+    }
+    .print-area .print-label {
+      font-family: -apple-system, sans-serif;
+      font-size: 11px;
+      color: #666;
+      margin-top: 6px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -320,6 +359,11 @@
   <div class="card">
     <h2>QR Code Preview</h2>
     <div class="qr-wrap"><div id="qrcode"></div></div>
+    <button class="print-btn" id="printBtn" onclick="printQR()" disabled>Print QR</button>
+  </div>
+
+  <div class="print-area" id="printArea" style="display:none">
+    <div id="printQrcode"></div>
   </div>
 
   <div class="card">
@@ -449,11 +493,31 @@ function renderQR(text) {
     colorDark: '#1d1d1f',
     colorLight: '#ffffff',
   });
+  document.getElementById('printBtn').disabled = false;
 }
 
 function clearQR() {
   document.getElementById('qrcode').innerHTML = '';
   currentCode = '';
+  document.getElementById('printBtn').disabled = true;
+}
+
+function printQR() {
+  if (!currentCode) return;
+  const printArea = document.getElementById('printArea');
+  const printQr = document.getElementById('printQrcode');
+  printQr.innerHTML = '';
+  new QRCode(printQr, {
+    text: currentCode,
+    width: 600,
+    height: 600,
+    correctLevel: QRCode.CorrectLevel.M,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+  });
+  printArea.style.display = 'flex';
+  window.print();
+  printArea.style.display = 'none';
 }
 
 function copyCode() {

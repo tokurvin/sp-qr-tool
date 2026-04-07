@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Swappie SP · ASN Generator</title>
+<title>SP ASN Code Generator</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,16 +16,23 @@
     min-height: 100vh;
   }
 
-  header {
-    background: #1a1a2e;
-    color: #fff;
-    padding: 18px 32px;
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 24px;
   }
-  header h1 { font-size: 18px; font-weight: 700; letter-spacing: .3px; }
-  header span { font-size: 12px; opacity: .55; }
+  .back-link:hover { text-decoration: underline; }
+
+  header {
+    margin-bottom: 24px;
+  }
+  header h1 { font-size: 1.6em; font-weight: 700; letter-spacing: -0.02em; }
+  .subtitle { color: #6e6e73; font-size: 0.9em; margin-top: 4px; }
 
   .container { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
 
@@ -253,12 +260,14 @@
 </head>
 <body>
 
-<header>
-  <h1>Swappie SP · ASN Code Generator</h1>
-  <span>v3 format · check digit enabled</span>
-</header>
-
 <div class="container">
+
+  <a href="index.html" class="back-link">← Back to tools</a>
+
+  <header>
+    <h1>SP ASN Code Generator</h1>
+    <p class="subtitle">Spare parts ASN label · Version 3 spec · Check digit: A–Z + $ % *</p>
+  </header>
 
   <div class="format-note">
     Generates new v3 QR codes: <code>{4-digit qty}{SKU}{PO}-{shipment#}-{total boxes}-{box#}{check letter}</code>

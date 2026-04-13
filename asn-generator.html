@@ -267,7 +267,7 @@
 
   <header>
     <h1>SP ASN Code Generator</h1>
-    <p class="subtitle">Spare parts ASN label · Version 3 spec · Check digit: A–Z + $ % * · <span id="app-version">v3.0</span></p>
+    <p class="subtitle">Spare parts ASN label · Version 3 spec · Check digit: A–Z + $ % * · <span id="app-version">v3.1</span></p>
   </header>
 
   <div class="format-note">
@@ -861,7 +861,30 @@ function downloadExcel() {
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'ASN');
-  XLSX.writeFile(wb, `${getFilenameBase()}.xlsx`);
+
+  // Use Blob + download link instead of XLSX.writeFile for better mobile/in-app browser compatibility
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  triggerDownload(blob, `${getFilenameBase()}.xlsx`);
+}
+
+function triggerDownload(blob, filename) {
+  // IE / old Edge
+  if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+    window.navigator.msSaveOrOpenBlob(blob, filename);
+    return;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
 }
 
 // ─────────────────────────────────────────────
@@ -894,11 +917,9 @@ function downloadCSV() {
     lines.push(headers.map(h => `"${row[h]}"`).join(','));
     lastSku = row['SKU'];
   });
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${getFilenameBase()}.csv`;
-  a.click();
+  // BOM for proper UTF-8 handling in Excel; same robust download path as XLSX
+  const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  triggerDownload(blob, `${getFilenameBase()}.csv`);
 }
 </script>
 </body>

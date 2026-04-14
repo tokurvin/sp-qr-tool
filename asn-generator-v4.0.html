@@ -188,7 +188,7 @@
     color: #1e293b;
     letter-spacing: .3px;
   }
-  .check-letter {
+  .check-chars {
     display: inline-block;
     background: rgba(99, 102, 241, 0.15);
     color: inherit;
@@ -266,13 +266,13 @@
   <a href="index.html" class="back-link">← Back to tools</a>
 
   <header>
-    <h1>SP ASN Code Generator <span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:6px; font-size:0.5em; font-weight:600; vertical-align:middle">SHADOW · v3.0</span></h1>
-    <p class="subtitle">Shadow build for download-bug repro · <span id="app-version">v3.0</span></p>
+    <h1>SP ASN Code Generator</h1>
+    <p class="subtitle">Spare parts ASN label · Version 4 spec · Check digits: A–Z + 0–9 + $ (mod 37, two independent hashes) · <span id="app-version">v4.0</span></p>
   </header>
 
   <div class="format-note">
-    Generates new v3 QR codes: <code>{4-digit qty}{SKU}{PO}-{shipment#}-{total boxes}-{box#}{check letter}</code>
-    &nbsp;·&nbsp; Check letter uses ISO 7064 MOD 29 (alphabet A–Z$%*) · detects all single-char errors &amp; adjacent transpositions
+    Generates v4 QR codes (EU Battery Regulation compliant): <code>HTTPS://Q.SWAPPIE.FI/{qty}{SKU}{PO}-{shp#}-{boxes}-{box#}-{C1}{C2}</code>
+    &nbsp;·&nbsp; Two check characters, mod 37 (A–Z + 0–9 + $) · detects all single &amp; double-character errors, all transpositions
   </div>
 
   <!-- ── Global inputs ── -->
@@ -336,7 +336,7 @@
               <th>Shp#</th>
               <th>Boxes</th>
               <th>Box#</th>
-              <th>QR Code String (v3)</th>
+              <th>QR Code String (v4)</th>
             </tr>
           </thead>
           <tbody id="result-tbody"></tbody>
@@ -355,9 +355,11 @@
 
 <script>
 // ─────────────────────────────────────────────
-// Check digit algorithm (v3 · MOD 29)
+// Check digit algorithm (v4 · two chars · MOD 37)
+// Alphabet: A–Z (0–25), 0–9 (26–35), $ (36) — 37 symbols (prime)
 // ─────────────────────────────────────────────
-const OUTPUT_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ$%*"; // 29 chars (prime)
+const OUTPUT_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$"; // 37 chars (prime)
+const URL_PREFIX = "HTTPS://Q.SWAPPIE.FI/";
 
 function charValue(c) {
   const code = c.charCodeAt(0);
@@ -367,24 +369,31 @@ function charValue(c) {
   return -1;
 }
 
-function computeCheckLetter(str) {
+function computeHash(str, multiplier) {
   let acc = 0;
   for (const c of str) {
     const v = charValue(c);
     if (v < 0) return '?'; // unexpected char
-    acc = (acc * 31 + v) % 29;
+    acc = (acc * multiplier + v) % 37;
   }
   return OUTPUT_ALPHABET[acc];
 }
 
+// Returns 2-character check string
+function computeCheckChars(str) {
+  const c1 = computeHash(str, 31); // primary hash
+  const c2 = computeHash(str, 17); // secondary hash (independent)
+  return c1 + c2;
+}
+
 function buildCode(qty, sku, po, shipNum, totalBoxes, boxNum) {
-  const qtyStr    = String(qty).padStart(4, '0');
-  const shipStr   = String(shipNum).padStart(2, '0');
-  const totalStr  = String(totalBoxes).padStart(2, '0');
-  const boxStr    = String(boxNum).padStart(2, '0');
-  const base = `${qtyStr}${sku}${po}-${shipStr}-${totalStr}-${boxStr}`;
-  const check = computeCheckLetter(base);
-  return base + check;
+  const qtyStr   = String(qty).padStart(4, '0');
+  const shipStr  = String(shipNum).padStart(2, '0');
+  const totalStr = String(totalBoxes).padStart(2, '0');
+  const boxStr   = String(boxNum).padStart(2, '0');
+  const path = `${qtyStr}${sku}${po}-${shipStr}-${totalStr}-${boxStr}`;
+  const check = computeCheckChars(path);
+  return URL_PREFIX + path + '-' + check;
 }
 
 // ─────────────────────────────────────────────
@@ -430,6 +439,13 @@ function showError(msg) {
   const el = document.getElementById('error-msg');
   el.textContent = msg;
   el.style.display = msg ? 'block' : 'none';
+}
+
+function codeToDisplay(code) {
+  // Splits a full v4 code into base (including trailing dash) and check chars for display
+  const checkChars = code.slice(-2);
+  const base = code.slice(0, -2);
+  return { base, checkChars };
 }
 
 function generate() {
@@ -522,8 +538,7 @@ function generate() {
       const qty = (isLast && remainder !== 0) ? remainder : bqty;
 
       const code = buildCode(qty, sku, po, shipNum, totalBoxes, box);
-      const checkLetter = code.slice(-1);
-      const baseCode = code.slice(0, -1);
+      const { base, checkChars } = codeToDisplay(code);
 
       const rowIdx = generatedRows.length;
 
@@ -537,7 +552,7 @@ function generate() {
         <td>${String(shipNum).padStart(2,'0')}</td>
         <td>${totalBoxes}</td>
         <td>${box}/${totalBoxes}</td>
-        <td class="mono" id="rcode-${rowIdx}">${baseCode}<span class="check-letter">${checkLetter}</span></td>
+        <td class="mono" id="rcode-${rowIdx}">${base}<span class="check-chars">${checkChars}</span></td>
       `;
       tbody.appendChild(tr);
 
@@ -550,7 +565,7 @@ function generate() {
         'Shipment #': String(shipNum).padStart(2, '0'),
         'Total Boxes': totalBoxes,
         'Box #': box,
-        'QR Code String (v3)': code,
+        'QR Code String (v4)': code,
         'Package Sticker': code,
         'Spare Part Sticker': code,
         _sku: sku, _po: po, _shipNum: shipNum, _totalBoxes: totalBoxes, _box: box, _skuIdx: skuIdx, _skuTqty: tqty, _skuRowStart: skuRowStart, _origBatchQty: bqty,
@@ -577,10 +592,6 @@ function generate() {
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function totalQty(tqty, bqty, totalBoxes) {
-  return tqty; // just return the declared total
-}
-
 // ─────────────────────────────────────────────
 // Live edit of batch qty in results
 // (uses event delegation on result-tbody for reliability)
@@ -593,12 +604,10 @@ function initQtyEditing() {
 
   var tbody = document.getElementById('result-tbody');
 
-  // Recalculate on blur (click away / tab out)
   tbody.addEventListener('focusout', function(e) {
     if (e.target.classList.contains('editable-qty')) onQtyEdit(e);
   });
 
-  // Recalculate on Enter key
   tbody.addEventListener('keydown', function(e) {
     if (e.target.classList.contains('editable-qty') && e.key === 'Enter') {
       e.preventDefault();
@@ -606,15 +615,12 @@ function initQtyEditing() {
     }
   });
 
-  // Recalculate on spinner arrow clicks (detected via change event
-  // only when not currently focused from keyboard typing)
   tbody.addEventListener('change', function(e) {
     if (e.target.classList.contains('editable-qty') && !e.target._typing) {
       onQtyEdit(e);
     }
   });
 
-  // Track whether user is typing vs using spinner
   tbody.addEventListener('keypress', function(e) {
     if (e.target.classList.contains('editable-qty')) {
       e.target._typing = true;
@@ -631,22 +637,19 @@ function updateRowDisplay(rowIdx) {
   var row = generatedRows[rowIdx];
   if (!row) return;
   var code = buildCode(row['Batch Qty'], row._sku, row._po, row._shipNum, row._totalBoxes, row._box);
-  row['QR Code String (v3)'] = code;
+  row['QR Code String (v4)'] = code;
   row['Package Sticker'] = code;
   row['Spare Part Sticker'] = code;
 
-  // Update qty input
   var qtyInput = document.getElementById('rqty-' + rowIdx);
   if (qtyInput && qtyInput !== document.activeElement) {
     qtyInput.value = row['Batch Qty'];
   }
 
-  // Update QR code cell
   var codeEl = document.getElementById('rcode-' + rowIdx);
   if (codeEl) {
-    var checkLetter = code.slice(-1);
-    var baseCode = code.slice(0, -1);
-    codeEl.innerHTML = baseCode + '<span class="check-letter">' + checkLetter + '</span>';
+    var d = codeToDisplay(code);
+    codeEl.innerHTML = d.base + '<span class="check-chars">' + d.checkChars + '</span>';
   }
 }
 
@@ -660,7 +663,6 @@ function rebuildResultTable() {
   var totalUnits = 0;
   var skuCount = 0;
 
-  // Count boxes per SKU for headers and box# display
   var skuBoxCounts = {};
   for (var i = 0; i < generatedRows.length; i++) {
     var si = generatedRows[i]._skuIdx;
@@ -693,27 +695,23 @@ function rebuildResultTable() {
       totalBoxesAll += newTotalBoxes;
     }
 
-    // Find this row's position within its SKU (1-based box#)
     var boxNum = 0;
     for (var j = 0; j <= i; j++) {
       if (generatedRows[j]._skuIdx === si) boxNum++;
     }
 
-    // Update row metadata
     row._totalBoxes = newTotalBoxes;
     row._box = boxNum;
     row['Total Boxes'] = newTotalBoxes;
     row['Box #'] = boxNum;
     row['Batch/Box'] = globalBatch;
 
-    // Rebuild QR code with updated box#/totalBoxes
     var code = buildCode(row['Batch Qty'], row._sku, row._po, row._shipNum, newTotalBoxes, boxNum);
-    row['QR Code String (v3)'] = code;
+    row['QR Code String (v4)'] = code;
     row['Package Sticker'] = code;
     row['Spare Part Sticker'] = code;
 
-    var checkLetter = code.slice(-1);
-    var baseCode = code.slice(0, -1);
+    var d = codeToDisplay(code);
 
     var tr = document.createElement('tr');
     tr.innerHTML =
@@ -724,14 +722,13 @@ function rebuildResultTable() {
       '<td>' + String(row._shipNum).padStart(2, '0') + '</td>' +
       '<td>' + newTotalBoxes + '</td>' +
       '<td>' + boxNum + '/' + newTotalBoxes + '</td>' +
-      '<td class="mono" id="rcode-' + i + '">' + baseCode + '<span class="check-letter">' + checkLetter + '</span></td>';
+      '<td class="mono" id="rcode-' + i + '">' + d.base + '<span class="check-chars">' + d.checkChars + '</span></td>';
     tbody.appendChild(tr);
 
     globalBatch++;
     totalUnits += row['Batch Qty'];
   }
 
-  // Update stats bar
   var statValues = document.querySelectorAll('.stat-value');
   if (statValues.length >= 1) statValues[0].textContent = skuCount;
   if (statValues.length >= 2) statValues[1].textContent = totalBoxesAll;
@@ -748,13 +745,12 @@ function onQtyEdit(e) {
   if (isNaN(newQty) || isNaN(rowIdx)) return;
   if (newQty < 1) newQty = 1;
   var clampedQty = Math.min(newQty, 9999);
-  input.value = clampedQty; // normalize displayed value on commit
+  input.value = clampedQty;
 
   var row = generatedRows[rowIdx];
   if (!row) return;
   row['Batch Qty'] = clampedQty;
 
-  // Find all rows for this SKU
   var skuRowIndices = [];
   for (var i = 0; i < generatedRows.length; i++) {
     if (generatedRows[i]._skuIdx === skuIdx) {
@@ -762,7 +758,6 @@ function onQtyEdit(e) {
     }
   }
 
-  // Redistribute: all boxes AFTER the edited one get recalculated
   var editedPos = skuRowIndices.indexOf(rowIdx);
   if (editedPos >= 0) {
     var sumBefore = 0;
@@ -772,7 +767,6 @@ function onQtyEdit(e) {
     var remaining = Math.max(0, skuTqty - sumBefore);
     var origBatch = row._origBatchQty;
 
-    // Update existing subsequent boxes
     for (var j = editedPos + 1; j < skuRowIndices.length; j++) {
       var ri = skuRowIndices[j];
       var boxQty = Math.min(remaining, origBatch);
@@ -780,22 +774,20 @@ function onQtyEdit(e) {
       remaining -= boxQty;
     }
 
-    // Add new boxes if remaining qty overflows past existing boxes
-    // (insert right after the last row of this SKU in generatedRows)
     if (remaining > 0) {
       var insertAfter = skuRowIndices[skuRowIndices.length - 1] + 1;
       var newRows = [];
       while (remaining > 0) {
         var boxQty = Math.min(remaining, origBatch);
         newRows.push({
-          'Batch/Box': 0, // will be renumbered by rebuildResultTable
+          'Batch/Box': 0,
           'Batch Qty': boxQty,
           'SKU': row._sku,
           'PO Number': row._po,
           'Shipment #': String(row._shipNum).padStart(2, '0'),
           'Total Boxes': 0,
           'Box #': 0,
-          'QR Code String (v3)': '',
+          'QR Code String (v4)': '',
           'Package Sticker': '',
           'Spare Part Sticker': '',
           _sku: row._sku, _po: row._po, _shipNum: row._shipNum,
@@ -805,15 +797,11 @@ function onQtyEdit(e) {
         });
         remaining -= boxQty;
       }
-      // Splice new rows into the correct position
       generatedRows.splice.apply(generatedRows, [insertAfter, 0].concat(newRows));
     }
   }
 
-  // Remove rows with 0 qty
   generatedRows = generatedRows.filter(function(r) { return r['Batch Qty'] > 0; });
-
-  // Rebuild the entire results table with correct box#, total boxes, QR codes
   rebuildResultTable();
 }
 
@@ -831,7 +819,6 @@ function getFilenameBase() {
 function downloadExcel() {
   if (!generatedRows.length) return;
 
-  // Build rows for Excel with empty separator rows between SKUs
   const excelRows = [];
   const headers = Object.keys(generatedRows[0]).filter(h => h[0] !== '_');
   excelRows.push(headers);
@@ -839,35 +826,51 @@ function downloadExcel() {
   let lastSku = null;
   generatedRows.forEach(row => {
     if (lastSku !== null && row['SKU'] !== lastSku) {
-      excelRows.push(new Array(headers.length).fill('')); // blank separator
+      excelRows.push(new Array(headers.length).fill(''));
     }
     excelRows.push(headers.map(h => row[h]));
     lastSku = row['SKU'];
   });
 
-  // Totals row
   excelRows.push(new Array(headers.length).fill(''));
   const totals = new Array(headers.length).fill('');
-  totals[0] = generatedRows.length; // total boxes
+  totals[0] = generatedRows.length;
   totals[1] = generatedRows.reduce((s, r) => s + r['Batch Qty'], 0);
   excelRows.push(totals);
 
   const ws = XLSX.utils.aoa_to_sheet(excelRows);
-
-  // Column widths
   ws['!cols'] = [
-    {wch:10},{wch:12},{wch:14},{wch:16},{wch:10},{wch:12},{wch:8},{wch:44},{wch:44},{wch:44}
+    {wch:10},{wch:12},{wch:14},{wch:16},{wch:10},{wch:12},{wch:8},{wch:65},{wch:65},{wch:65}
   ];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'ASN');
-  XLSX.writeFile(wb, `${getFilenameBase()}.xlsx`);
+
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  triggerDownload(blob, `${getFilenameBase()}.xlsx`);
+}
+
+function triggerDownload(blob, filename) {
+  if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+    window.navigator.msSaveOrOpenBlob(blob, filename);
+    return;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
 }
 
 // ─────────────────────────────────────────────
 // Page reset — ensure clean state on every load
-// (prevents browser auto-fill from leaking data
-//  between vendors sharing the same URL)
 // ─────────────────────────────────────────────
 window.addEventListener('pageshow', function() {
   document.getElementById('po-number').value = '';
@@ -876,7 +879,6 @@ window.addEventListener('pageshow', function() {
   generatedRows = [];
   document.getElementById('result-tbody').innerHTML = '';
   document.getElementById('stats-bar').innerHTML = '';
-  // Reset SKU inputs
   document.querySelectorAll('#sku-tbody input').forEach(function(input) {
     input.value = '';
     input.classList.remove('invalid');
@@ -894,11 +896,8 @@ function downloadCSV() {
     lines.push(headers.map(h => `"${row[h]}"`).join(','));
     lastSku = row['SKU'];
   });
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${getFilenameBase()}.csv`;
-  a.click();
+  const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  triggerDownload(blob, `${getFilenameBase()}.csv`);
 }
 </script>
 </body>

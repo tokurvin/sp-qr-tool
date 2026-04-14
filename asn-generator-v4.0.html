@@ -271,8 +271,8 @@
   </header>
 
   <div class="format-note">
-    Generates v4 QR codes (EU Battery Regulation compliant): <code>HTTPS://Q.SWAPPIE.FI/{qty}{SKU}{PO}-{shp#}-{boxes}-{box#}-{C1}{C2}</code>
-    &nbsp;·&nbsp; Two check characters, mod 37 (A–Z + 0–9 + $) · detects all single &amp; double-character errors, all transpositions
+    Generates v4 QR codes (EU Battery Regulation compliant): <code>HTTPS://Q.SWAPPIE.FI/{qty}-{SKU}-{PO}-{shp#}-{boxes}-{box#}-{C1}{C2}</code>
+    &nbsp;·&nbsp; Two check characters, mod 37 (A–Z + 0–9 + $) · QR Version 4-Q (25% error correction) · 20×20mm sticker
   </div>
 
   <!-- ── Global inputs ── -->
@@ -391,7 +391,8 @@ function buildCode(qty, sku, po, shipNum, totalBoxes, boxNum) {
   const shipStr  = String(shipNum).padStart(2, '0');
   const totalStr = String(totalBoxes).padStart(2, '0');
   const boxStr   = String(boxNum).padStart(2, '0');
-  const path = `${qtyStr}${sku}${po}-${shipStr}-${totalStr}-${boxStr}`;
+  // po arrives as "POFI-00088285" — dash between qty/sku/po for readability
+  const path = `${qtyStr}-${sku}-${po}-${shipStr}-${totalStr}-${boxStr}`;
   const check = computeCheckChars(path);
   return URL_PREFIX + path + '-' + check;
 }

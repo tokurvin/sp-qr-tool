@@ -337,6 +337,7 @@
               <th>Boxes</th>
               <th>Box#</th>
               <th>QR Code String (v4)</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="result-tbody"></tbody>
@@ -349,6 +350,24 @@
         <button class="btn btn-outline" onclick="downloadCSV()">CSV</button>
       </div>
     </div>
+  </div>
+
+  <!-- ── Landing page preview ── -->
+  <div class="card" style="margin-top:8px">
+    <div class="card-title">Preview EU Battery Landing Page</div>
+    <p style="font-size:13px;color:#64748b;margin-bottom:14px;line-height:1.6">
+      Paste any v4 QR code (or full URL) below to preview the EU Battery Regulation landing page — the page consumers and regulators would see when scanning the sticker.
+    </p>
+    <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <input type="text" id="preview-input" placeholder="POFI-00088285-SMAPLP1003-01-05-03-0010:XY" spellcheck="false" autocomplete="off" style="width:100%;font-family:'SF Mono','Fira Code',monospace;font-size:12px">
+      </div>
+      <button class="btn btn-primary" onclick="openPreview()">Open landing page ↗</button>
+    </div>
+    <div id="preview-error" style="color:#ef4444;font-size:12px;margin-top:8px;display:none"></div>
+    <p style="font-size:11px;color:#94a3b8;margin-top:10px">
+      You can also click <strong>Preview</strong> next to any generated code in the results table above.
+    </p>
   </div>
 
 </div><!-- /container -->
@@ -555,6 +574,7 @@ function generate() {
         <td>${totalBoxes}</td>
         <td>${box}/${totalBoxes}</td>
         <td class="mono" id="rcode-${rowIdx}">${base}<span class="check-chars">${checkChars}</span></td>
+        <td><button class="btn btn-outline" style="padding:5px 10px;font-size:11px;white-space:nowrap" onclick="openPreviewForRow('${code}')">Preview ↗</button></td>
       `;
       tbody.appendChild(tr);
 
@@ -724,7 +744,8 @@ function rebuildResultTable() {
       '<td>' + String(row._shipNum).padStart(2, '0') + '</td>' +
       '<td>' + newTotalBoxes + '</td>' +
       '<td>' + boxNum + '/' + newTotalBoxes + '</td>' +
-      '<td class="mono" id="rcode-' + i + '">' + d.base + '<span class="check-chars">' + d.checkChars + '</span></td>';
+      '<td class="mono" id="rcode-' + i + '">' + d.base + '<span class="check-chars">' + d.checkChars + '</span></td>' +
+      '<td><button class="btn btn-outline" style="padding:5px 10px;font-size:11px;white-space:nowrap" onclick="openPreviewForRow(\'' + code + '\')">Preview ↗</button></td>';
     tbody.appendChild(tr);
 
     globalBatch++;
@@ -809,6 +830,35 @@ function onQtyEdit(e) {
 
 // Initialize event delegation immediately
 initQtyEditing();
+
+// ─────────────────────────────────────────────
+// Landing page preview
+// ─────────────────────────────────────────────
+function codeToPreviewHash(code) {
+  // Strip full URL prefix if present, keep just the path+check
+  const prefix = 'HTTPS://QR.SWAPPIE.CLOUD/';
+  let c = code.trim().toUpperCase();
+  if (c.startsWith(prefix)) c = c.slice(prefix.length);
+  return c;
+}
+
+function openPreview() {
+  const input = document.getElementById('preview-input').value.trim();
+  const errEl = document.getElementById('preview-error');
+  if (!input) {
+    errEl.textContent = 'Please paste a v4 code first.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  const hash = codeToPreviewHash(input);
+  window.open('battery.html#' + encodeURIComponent(hash), '_blank');
+}
+
+function openPreviewForRow(code) {
+  const hash = codeToPreviewHash(code);
+  window.open('battery.html#' + encodeURIComponent(hash), '_blank');
+}
 
 // ─────────────────────────────────────────────
 // Downloads

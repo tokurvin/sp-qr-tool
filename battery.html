@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Battery Information — Swappie</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --brand: #6366f1;
+    --brand-dark: #4338ca;
+    --green: #16a34a;
+    --amber: #d97706;
+    --red: #dc2626;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-400: #9ca3af;
+    --gray-600: #4b5563;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15px;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    min-height: 100vh;
+    padding-bottom: 48px;
+  }
+
+  /* ── Demo banner ── */
+  .demo-banner {
+    background: #fef3c7;
+    border-bottom: 2px solid #f59e0b;
+    color: #92400e;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--brand);
+    letter-spacing: -0.03em;
+  }
+  .logo span { color: var(--gray-800); }
+  .header-sub {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 1px;
+  }
+  .eu-badge {
+    margin-left: auto;
+    background: #dbeafe;
+    color: #1e40af;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: .3px;
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 680px; margin: 0 auto; padding: 24px 16px; }
+
+  /* ── Error / invalid state ── */
+  .error-card {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  .error-icon { font-size: 48px; margin-bottom: 16px; }
+  .error-card h2 { font-size: 1.2em; margin-bottom: 8px; }
+  .error-card p { color: var(--gray-600); font-size: 14px; line-height: 1.6; }
+
+  /* ── Code identity card ── */
+  .identity-card {
+    background: var(--brand);
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .identity-card .label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    opacity: .75;
+    margin-bottom: 4px;
+  }
+  .identity-card .product-name {
+    font-size: 1.3em;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .identity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .identity-item { }
+  .identity-item .item-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    opacity: .7;
+    margin-bottom: 2px;
+  }
+  .identity-item .item-value {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: "SF Mono", "Fira Code", monospace;
+  }
+
+  /* ── Sections ── */
+  .section {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--gray-100);
+    background: var(--gray-50);
+  }
+  .section-icon { font-size: 20px; line-height: 1; }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--gray-600);
+  }
+  .section-body { padding: 16px 18px; }
+
+  /* ── Data rows ── */
+  .data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--gray-100);
+    gap: 16px;
+  }
+  .data-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .data-row:first-child { padding-top: 0; }
+  .data-label { font-size: 13px; color: var(--gray-600); flex-shrink: 0; }
+  .data-value { font-size: 13px; font-weight: 600; text-align: right; }
+  .data-value.mono { font-family: "SF Mono", "Fira Code", monospace; }
+
+  /* ── Compliance pills ── */
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .pill {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .pill-green { background: #dcfce7; color: #166534; }
+  .pill-amber { background: #fef3c7; color: #92400e; }
+  .pill-gray  { background: var(--gray-100); color: var(--gray-600); }
+
+  /* ── Recycling symbol ── */
+  .recycling-block {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+  }
+  .recycling-symbol {
+    font-size: 48px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .recycling-text { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+  .recycling-text strong { color: var(--gray-800); display: block; margin-bottom: 2px; }
+
+  /* ── Collection points ── */
+  .collection-note {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #166534;
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+
+  /* ── Footer ── */
+  .page-footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--gray-400);
+    line-height: 1.8;
+  }
+  .page-footer a { color: var(--brand); text-decoration: none; }
+  .page-footer a:hover { text-decoration: underline; }
+
+  /* ── Valid / invalid check ── */
+  .check-valid { color: var(--green); font-size: 12px; display: flex; align-items: center; gap: 4px; margin-top: 10px; font-weight: 600; }
+  .check-invalid { color: var(--red); font-size: 12px; display: flex; align-items: center; gap: 4px; margin-top: 10px; font-weight: 600; }
+
+  /* ── DoC link ── */
+  .doc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--brand);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 8px;
+  }
+  .doc-link:hover { text-decoration: underline; }
+
+  @media (max-width: 480px) {
+    .identity-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-banner">
+  ⚠️ DEMONSTRATION — This page shows example data only. Not real product information.
+</div>
+
+<header class="site-header">
+  <div>
+    <div class="logo">swap<span>pie</span></div>
+    <div class="header-sub">Battery Information</div>
+  </div>
+  <div class="eu-badge">EU 2023/1542</div>
+</header>
+
+<div class="container" id="app">
+  <!-- Filled by JS -->
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// Check character validation (v4 · MOD 37)
+// ─────────────────────────────────────────────
+const OUTPUT_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$";
+
+function charValue(c) {
+  if (c >= '0' && c <= '9') return c.charCodeAt(0) - 48;
+  if (c >= 'A' && c <= 'Z') return c.charCodeAt(0) - 65 + 10;
+  if (c === '-') return 36;
+  return -1;
+}
+
+function computeHash(str, multiplier) {
+  let acc = 0;
+  for (const c of str) {
+    const v = charValue(c);
+    if (v < 0) return '?';
+    acc = (acc * multiplier + v) % 37;
+  }
+  return OUTPUT_ALPHABET[acc];
+}
+
+function validateCheckChars(path, check) {
+  if (check.length !== 2) return false;
+  return computeHash(path, 31) === check[0] && computeHash(path, 17) === check[1];
+}
+
+// ─────────────────────────────────────────────
+// Parse v4 code
+// Format: {po_country}-{po_number}-{sku}-{shp#}-{boxes}-{box#}-{qty}:{c1}{c2}
+// ─────────────────────────────────────────────
+function parseCode(raw) {
+  // Strip URL prefix if present
+  const prefix = 'HTTPS://QR.SWAPPIE.CLOUD/';
+  let code = raw.toUpperCase().trim();
+  if (code.startsWith(prefix)) code = code.slice(prefix.length);
+
+  // Split on colon to get path + check chars
+  const colonIdx = code.lastIndexOf(':');
+  if (colonIdx < 0) return null;
+  const path = code.slice(0, colonIdx);
+  const check = code.slice(colonIdx + 1);
+  if (check.length !== 2) return null;
+
+  // Parse path fields: PO[A-Z]{2}-\d{8}-SKU-\d{2}-\d{2}-\d{2}-\d{4}
+  const regex = /^(PO[A-Z]{2})-(\d{8})-((SM|TB|LT)APLP\d{1,5})-(\d{2})-(\d{2})-(\d{2})-(\d{4})$/;
+  const m = path.match(regex);
+  if (!m) return null;
+
+  const valid = validateCheckChars(path, check);
+
+  return {
+    raw: code,
+    path,
+    check,
+    valid,
+    poCountry: m[1],        // POFI
+    poNumber: m[2],         // 00088285
+    sku: m[3],              // SMAPLP1003
+    skuType: m[4],          // SM / TB / LT
+    shipment: parseInt(m[5]),
+    totalBoxes: parseInt(m[6]),
+    boxNumber: parseInt(m[7]),
+    qty: parseInt(m[8]),
+  };
+}
+
+// ─────────────────────────────────────────────
+// Dummy battery data (by SKU type)
+// ─────────────────────────────────────────────
+function getBatteryData(skuType) {
+  const data = {
+    SM: {
+      product: 'Smartphone Replacement Battery',
+      model: 'Li-ion Battery — Mobile Phone',
+      capacity: '3 500 mAh / 13.5 Wh',
+      voltage: '3.87 V nominal (4.45 V max)',
+      weight: '48 g',
+      dimensions: '70 × 35 × 4.3 mm',
+      cycles: '500+ charge cycles',
+      duration: 'Minimum 2 years under normal use',
+      retention: '≥80% capacity after 500 cycles',
+      carbonMfg: '~9.5 kg CO₂e',
+      carbonLife: '~12 kg CO₂e (estimated full lifecycle)',
+      carbonIntensity: '~0.70 kg CO₂e / Wh',
+      recycledCobalt: '12%',
+      recycledLithium: '4%',
+      recycledNickel: '4%',
+    },
+    TB: {
+      product: 'Tablet Replacement Battery',
+      model: 'Li-ion Battery — Tablet',
+      capacity: '7 200 mAh / 27.7 Wh',
+      voltage: '3.85 V nominal (4.40 V max)',
+      weight: '102 g',
+      dimensions: '145 × 72 × 4.0 mm',
+      cycles: '500+ charge cycles',
+      duration: 'Minimum 2 years under normal use',
+      retention: '≥80% capacity after 500 cycles',
+      carbonMfg: '~19 kg CO₂e',
+      carbonLife: '~24 kg CO₂e (estimated full lifecycle)',
+      carbonIntensity: '~0.69 kg CO₂e / Wh',
+      recycledCobalt: '11%',
+      recycledLithium: '4%',
+      recycledNickel: '4%',
+    },
+    LT: {
+      product: 'Laptop Replacement Battery',
+      model: 'Li-ion Battery — Laptop',
+      capacity: '4 400 mAh / 50 Wh',
+      voltage: '11.4 V nominal (13.05 V max)',
+      weight: '215 g',
+      dimensions: '270 × 40 × 8 mm',
+      cycles: '500+ charge cycles',
+      duration: 'Minimum 3 years under normal use',
+      retention: '≥80% capacity after 500 cycles',
+      carbonMfg: '~38 kg CO₂e',
+      carbonLife: '~47 kg CO₂e (estimated full lifecycle)',
+      carbonIntensity: '~0.76 kg CO₂e / Wh',
+      recycledCobalt: '13%',
+      recycledLithium: '5%',
+      recycledNickel: '5%',
+    },
+  };
+  return data[skuType] || data['SM'];
+}
+
+// ─────────────────────────────────────────────
+// Render
+// ─────────────────────────────────────────────
+function render() {
+  const app = document.getElementById('app');
+
+  // Get code from URL hash (strip leading #)
+  const raw = decodeURIComponent(window.location.hash.slice(1));
+
+  if (!raw) {
+    app.innerHTML = `
+      <div class="error-card">
+        <div class="error-icon">🔋</div>
+        <h2>No battery code provided</h2>
+        <p>This page is meant to be opened by scanning a Swappie v4 QR code, or by entering a code in the ASN generator tool.</p>
+      </div>`;
+    return;
+  }
+
+  const parsed = parseCode(raw);
+
+  if (!parsed) {
+    app.innerHTML = `
+      <div class="error-card">
+        <div class="error-icon">⚠️</div>
+        <h2>Unrecognised code format</h2>
+        <p>The code <code style="font-size:12px;background:#f3f4f6;padding:2px 6px;border-radius:4px">${raw}</code> could not be parsed as a v4 Swappie battery code.</p>
+      </div>`;
+    return;
+  }
+
+  const d = getBatteryData(parsed.skuType);
+  const country = parsed.poCountry.replace('PO','');
+  const countryNames = { FI:'Finland', SE:'Sweden', DE:'Germany', NL:'Netherlands', FR:'France', PL:'Poland', UK:'United Kingdom' };
+  const countryName = countryNames[country] || country;
+
+  const checkHtml = parsed.valid
+    ? `<div class="check-valid">✓ Code integrity verified — both check characters valid</div>`
+    : `<div class="check-invalid">✗ Check character mismatch — code may be corrupted</div>`;
+
+  app.innerHTML = `
+
+    <!-- Identity card -->
+    <div class="identity-card">
+      <div class="label">Battery Information</div>
+      <div class="product-name">${d.product}</div>
+      <div class="identity-grid">
+        <div class="identity-item">
+          <div class="item-label">SKU</div>
+          <div class="item-value">${parsed.sku}</div>
+        </div>
+        <div class="identity-item">
+          <div class="item-label">Purchase Order</div>
+          <div class="item-value">${parsed.poCountry}-${parsed.poNumber}</div>
+        </div>
+        <div class="identity-item">
+          <div class="item-label">Origin</div>
+          <div class="item-value">${countryName}</div>
+        </div>
+        <div class="identity-item">
+          <div class="item-label">Batch</div>
+          <div class="item-value">Box ${parsed.boxNumber}/${parsed.totalBoxes} · Shp ${parsed.shipment}</div>
+        </div>
+      </div>
+      ${checkHtml}
+    </div>
+
+    <!-- 1. Product & Performance -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">⚡</span>
+        <span class="section-title">Performance &amp; Lifespan</span>
+      </div>
+      <div class="section-body">
+        <div class="data-row">
+          <span class="data-label">Battery type</span>
+          <span class="data-value">${d.model}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Capacity</span>
+          <span class="data-value">${d.capacity}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Nominal voltage</span>
+          <span class="data-value">${d.voltage}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Weight</span>
+          <span class="data-value">${d.weight}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Dimensions</span>
+          <span class="data-value">${d.dimensions}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Rated cycle life</span>
+          <span class="data-value">${d.cycles}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Expected duration</span>
+          <span class="data-value">${d.duration}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Capacity retention</span>
+          <span class="data-value">${d.retention}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Chemical composition -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">🧪</span>
+        <span class="section-title">Chemical Composition</span>
+      </div>
+      <div class="section-body">
+        <div class="data-row">
+          <span class="data-label">Battery chemistry</span>
+          <span class="data-value">Lithium-ion (Li-ion)</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Cathode material</span>
+          <span class="data-value">Lithium Cobalt Oxide (LiCoO₂)</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Anode material</span>
+          <span class="data-value">Graphite</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Electrolyte</span>
+          <span class="data-value">Liquid organic (LiPF₆)</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Hazardous substances</span>
+          <span class="data-value" style="text-align:right">
+            <div class="pill-row" style="justify-content:flex-end">
+              <span class="pill pill-green">✓ No Cd</span>
+              <span class="pill pill-green">✓ No Pb</span>
+              <span class="pill pill-green">✓ No Hg</span>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Carbon footprint -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">🌍</span>
+        <span class="section-title">Carbon Footprint</span>
+      </div>
+      <div class="section-body">
+        <div class="data-row">
+          <span class="data-label">Manufacturing footprint</span>
+          <span class="data-value">${d.carbonMfg}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Full lifecycle footprint</span>
+          <span class="data-value">${d.carbonLife}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Carbon intensity</span>
+          <span class="data-value">${d.carbonIntensity}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Declaration standard</span>
+          <span class="data-value">EN 50693 / IEC 62619</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Recycled content -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">♻️</span>
+        <span class="section-title">Recycled Content</span>
+      </div>
+      <div class="section-body">
+        <div class="data-row">
+          <span class="data-label">Cobalt (recycled)</span>
+          <span class="data-value">${d.recycledCobalt}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Lithium (recycled)</span>
+          <span class="data-value">${d.recycledLithium}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Nickel (recycled)</span>
+          <span class="data-value">${d.recycledNickel}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Collection & recycling -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">🗑️</span>
+        <span class="section-title">End-of-Life &amp; Recycling</span>
+      </div>
+      <div class="section-body">
+        <div class="recycling-block">
+          <div class="recycling-symbol">🔋</div>
+          <div class="recycling-text">
+            <strong>Do not dispose of in household waste</strong>
+            This battery must be collected separately and recycled in accordance with EU Directive 2023/1542. The crossed-out wheelie bin symbol indicates separate collection is required.
+          </div>
+        </div>
+        <div class="collection-note">
+          ♻ Take this battery to a certified collection point, retailer take-back scheme, or authorised recycling facility. Do not incinerate or puncture.
+        </div>
+        <div class="data-row" style="margin-top:12px">
+          <span class="data-label">Recycling instructions</span>
+          <span class="data-value">Discharge before disposal · Remove from device · No incineration</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Waste management</span>
+          <span class="data-value">WEEE directive compliant · Separate collection</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Traceability -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">📦</span>
+        <span class="section-title">Traceability</span>
+      </div>
+      <div class="section-body">
+        <div class="data-row">
+          <span class="data-label">Lot / batch identifier</span>
+          <span class="data-value mono">${parsed.sku}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Purchase order</span>
+          <span class="data-value mono">${parsed.poCountry}-${parsed.poNumber}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Shipment</span>
+          <span class="data-value">No. ${parsed.shipment} · Box ${parsed.boxNumber} of ${parsed.totalBoxes}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Country of import</span>
+          <span class="data-value">${countryName}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Country of manufacture</span>
+          <span class="data-value">China</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Responsible importer</span>
+          <span class="data-value">Swappie Oy, Helsinki, Finland</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Legal & compliance -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">📋</span>
+        <span class="section-title">Legal &amp; Compliance</span>
+      </div>
+      <div class="section-body">
+        <div class="data-row">
+          <span class="data-label">Regulation</span>
+          <span class="data-value">EU 2023/1542 (Battery Regulation)</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Battery category</span>
+          <span class="data-value">Portable battery (&lt;5 kg)</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Economic operator</span>
+          <span class="data-value">Swappie Oy (importer)</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">EU Declaration of Conformity</span>
+          <span class="data-value"><a href="#" class="doc-link" onclick="return false">View document ↗</a></span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Standards applied</span>
+          <span class="data-value">IEC 62133-2 · UN 38.3 · EN 50693</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <div>Swappie Oy · Miestentie 9, 02150 Espoo, Finland</div>
+      <div style="margin-top:4px"><a href="https://swappie.com">swappie.com</a> · EU Battery Regulation 2023/1542</div>
+      <div style="margin-top:8px;color:#d1d5db">This is a demonstration page with example data only.</div>
+    </div>
+
+  `;
+}
+
+render();
+
+// Re-render if hash changes
+window.addEventListener('hashchange', render);
+</script>
+
+</body>
+</html>

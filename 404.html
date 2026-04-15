@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Redirecting…</title>
+<script>
+  // GitHub Pages routing trick:
+  // Any unknown path (like /sp-qr-tool/POFI-...) lands here.
+  // We extract the code from the path and redirect to battery.html#CODE,
+  // which renders the EU battery landing page.
+  (function() {
+    var path = window.location.pathname;
+    var base = '/sp-qr-tool/';
+
+    if (path.startsWith(base)) {
+      var code = path.slice(base.length);
+      if (code && code.length > 0) {
+        // Redirect to battery page with code as hash
+        window.location.replace(
+          window.location.origin + base + 'battery.html#' + encodeURIComponent(code)
+        );
+        return;
+      }
+    }
+
+    // Fallback: go to the tool homepage
+    window.location.replace(window.location.origin + base);
+  })();
+</script>
+</head>
+<body>
+  <p style="font-family:sans-serif;color:#666;padding:40px">Redirecting…</p>
+</body>
+</html>

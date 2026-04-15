@@ -842,6 +842,13 @@ function codeToPreviewHash(code) {
   return c;
 }
 
+function previewUrl(code) {
+  // Use path-based URL to match the real production format (qr.swappie.cloud/CODE)
+  // On GitHub Pages, 404.html catches this and redirects to battery.html#CODE
+  const c = codeToPreviewHash(code);
+  return window.location.origin + '/sp-qr-tool/' + c;
+}
+
 function openPreview() {
   const input = document.getElementById('preview-input').value.trim();
   const errEl = document.getElementById('preview-error');
@@ -851,13 +858,11 @@ function openPreview() {
     return;
   }
   errEl.style.display = 'none';
-  const hash = codeToPreviewHash(input);
-  window.open('battery.html#' + encodeURIComponent(hash), '_blank');
+  window.open(previewUrl(input), '_blank');
 }
 
 function openPreviewForRow(code) {
-  const hash = codeToPreviewHash(code);
-  window.open('battery.html#' + encodeURIComponent(hash), '_blank');
+  window.open(previewUrl(code), '_blank');
 }
 
 // ─────────────────────────────────────────────

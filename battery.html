@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Battery Information — Swappie</title>
+<title>Battery Information</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -254,8 +254,8 @@
 
 <header class="site-header">
   <div>
-    <div class="logo">swap<span>pie</span></div>
-    <div class="header-sub">Battery Information</div>
+    <div class="logo">🔋 <span>Battery Information</span></div>
+    <div class="header-sub">EU 2023/1542 Compliance</div>
   </div>
   <div class="eu-badge">EU 2023/1542</div>
 </header>
@@ -321,10 +321,10 @@ function parseCode(raw) {
     path,
     check,
     valid,
-    poCountry: m[1],        // POFI
-    poNumber: m[2],         // 00088285
-    sku: m[3],              // SMAPLP1003
-    skuType: m[4],          // SM / TB / LT
+    poCountry: m[1],
+    poNumber: m[2],
+    sku: m[3],
+    skuType: m[4],
     shipment: parseInt(m[5]),
     totalBoxes: parseInt(m[6]),
     boxNumber: parseInt(m[7]),
@@ -398,7 +398,6 @@ function getBatteryData(skuType) {
 function render() {
   const app = document.getElementById('app');
 
-  // Get code from URL hash (strip leading #)
   const raw = decodeURIComponent(window.location.hash.slice(1));
 
   if (!raw) {
@@ -406,7 +405,7 @@ function render() {
       <div class="error-card">
         <div class="error-icon">🔋</div>
         <h2>No battery code provided</h2>
-        <p>This page is meant to be opened by scanning a Swappie v4 QR code, or by entering a code in the ASN generator tool.</p>
+        <p>This page is meant to be opened by scanning a v4 QR code from a battery spare part label.</p>
       </div>`;
     return;
   }
@@ -418,7 +417,7 @@ function render() {
       <div class="error-card">
         <div class="error-icon">⚠️</div>
         <h2>Unrecognised code format</h2>
-        <p>The code <code style="font-size:12px;background:#f3f4f6;padding:2px 6px;border-radius:4px">${raw}</code> could not be parsed as a v4 Swappie battery code.</p>
+        <p>The code <code style="font-size:12px;background:#f3f4f6;padding:2px 6px;border-radius:4px">${raw}</code> could not be parsed as a v4 battery code.</p>
       </div>`;
     return;
   }
@@ -642,7 +641,7 @@ function render() {
         </div>
         <div class="data-row">
           <span class="data-label">Responsible importer</span>
-          <span class="data-value">Swappie Oy, Helsinki, Finland</span>
+          <span class="data-value">[Importer], Finland</span>
         </div>
       </div>
     </div>
@@ -664,7 +663,7 @@ function render() {
         </div>
         <div class="data-row">
           <span class="data-label">Economic operator</span>
-          <span class="data-value">Swappie Oy (importer)</span>
+          <span class="data-value">[Importer] (importer)</span>
         </div>
         <div class="data-row">
           <span class="data-label">EU Declaration of Conformity</span>
@@ -678,8 +677,7 @@ function render() {
     </div>
 
     <div class="page-footer">
-      <div>Swappie Oy · Miestentie 9, 02150 Espoo, Finland</div>
-      <div style="margin-top:4px"><a href="https://swappie.com">swappie.com</a> · EU Battery Regulation 2023/1542</div>
+      <div>EU Battery Regulation 2023/1542</div>
       <div style="margin-top:8px;color:#d1d5db">This is a demonstration page with example data only.</div>
     </div>
 

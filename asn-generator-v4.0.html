@@ -271,7 +271,7 @@
   </header>
 
   <div class="format-note">
-    Generates v4 QR codes (EU Battery Regulation compliant): <code>HTTPS://QR.SWAPPIE.CLOUD/{PO}-{SKU}-{shp#}-{boxes}-{box#}-{qty}:{C1}{C2}</code>
+    Generates v4 QR codes (EU Battery Regulation compliant): <code>HTTPS://[DOMAIN]/{PO}-{SKU}-{shp#}-{boxes}-{box#}-{qty}:{C1}{C2}</code>
     &nbsp;·&nbsp; Two check characters, mod 37 (A–Z + 0–9 + $) · QR Version 4-Q (25% error correction) · 20×20mm sticker
   </div>
 
@@ -360,7 +360,7 @@
     </p>
     <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
       <div style="flex:1;min-width:200px">
-        <input type="text" id="preview-input" placeholder="POFI-00088285-SMAPLP1003-01-05-03-0010:XY" spellcheck="false" autocomplete="off" style="width:100%;font-family:'SF Mono','Fira Code',monospace;font-size:12px">
+        <input type="text" id="preview-input" placeholder="POFI-00088285-SMAPLP1003-01-05-03-0010:BK" spellcheck="false" autocomplete="off" style="width:100%;font-family:'SF Mono','Fira Code',monospace;font-size:12px">
       </div>
       <button class="btn btn-primary" onclick="openPreview()">Open landing page ↗</button>
     </div>
@@ -745,7 +745,7 @@ function rebuildResultTable() {
       '<td>' + newTotalBoxes + '</td>' +
       '<td>' + boxNum + '/' + newTotalBoxes + '</td>' +
       '<td class="mono" id="rcode-' + i + '">' + d.base + '<span class="check-chars">' + d.checkChars + '</span></td>' +
-      '<td><button class="btn btn-outline" style="padding:5px 10px;font-size:11px;white-space:nowrap" onclick="openPreviewForRow(\'' + code + '\')">Preview ↗</button></td>';
+      '<td><button class="btn btn-outline" style="padding:5px 10px;font-size:11px;white-space:nowrap" onclick="openPreviewForRow(\'' + code + \')">Preview ↗</button></td>';
     tbody.appendChild(tr);
 
     globalBatch++;
@@ -953,7 +953,7 @@ function downloadCSV() {
     lines.push(headers.map(h => `"${row[h]}"`).join(','));
     lastSku = row['SKU'];
   });
-  const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   triggerDownload(blob, `${getFilenameBase()}.csv`);
 }
 </script>

@@ -253,7 +253,6 @@
   .algo-item code {
     font-family: "SF Mono", "Fira Code", monospace;
     background: #e2e8f0; padding: 1px 4px; border-radius: 3px;
-    font-size: 11px; word-break: break-all;
   }
 
   footer {
@@ -270,7 +269,7 @@
   <div class="header-inner">
     <div class="header-eyebrow">SP Tools</div>
     <h1>Spare Parts QR Tools</h1>
-    <p>Generate and validate spare parts LOT labels. v1 (no check char) is in production; v3 adds error detection but rollout is paused; v4 adds EU Battery Regulation compliance.</p>
+    <p>Generate and validate spare parts LOT labels. v3 is in production; v4 adds EU Battery Regulation compliance with URL-based QR codes and two check characters.</p>
   </div>
 </header>
 
@@ -395,11 +394,11 @@
         </div>
       </a>
 
-      <a href="battery.html" class="tool-card amber">
+      <a href="battery.html#POFI-00088285-SMAPLP1003-01-05-03-0010:BK" class="tool-card amber">
         <div class="tool-icon">🔋</div>
         <div class="tool-title">Battery Landing Page</div>
         <div class="tool-desc">
-          Demo mockup of what end users and recyclers see when they scan a v4.0 battery sticker QR code. Shows EU Battery Regulation required information. Content and URL are not final.
+          Demo mockup of what end users and recyclers see when they scan a v4.0 battery sticker QR code. Shows EU Battery Regulation required information. Opens with an example code — use the preview link in QR Checker v4 to open with your own generated code. Content and URL are not final.
         </div>
         <div class="tool-footer">
           <div class="tool-tags">
@@ -435,7 +434,7 @@
     <div class="algo-row">
       <div class="algo-item">
         <strong>No validation</strong>
-        No check char, no error detection. A mis-scan or typo passes through silently.
+        No check char, no error detection. A mis-scan or typo will pass through silently.
       </div>
       <div class="algo-item">
         <strong>QR spec</strong>
@@ -443,7 +442,7 @@
       </div>
       <div class="algo-item">
         <strong>Regex</strong>
-        <code>^(?&lt;qty&gt;\d{1,5})(?&lt;SKU&gt;[a-zA-Z0-9]{7,11})(?&lt;PO&gt;pofi-\d{8})(?&lt;totalBoxes&gt;\d{1,4})-(?&lt;boxId&gt;\d{1,4})$</code>
+        <code>^(?&lt;qty&gt;\d{1,5})(?&lt;SKU&gt;[A-Z0-9]{7,11})(?&lt;PO&gt;PO[A-Z]{2}-\d{8})(?&lt;totalBoxes&gt;\d{1,4})-(?&lt;boxId&gt;\d{1,4})$</code>
       </div>
       <div class="algo-item">
         <strong>Note</strong>

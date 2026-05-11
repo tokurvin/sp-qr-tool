@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SP QR Code Checker — v4</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    min-height: 100vh;
+    padding: 32px 16px;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.85em; color: #6366f1; text-decoration: none;
+    font-weight: 500; margin-bottom: 24px;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  header { margin-bottom: 28px; }
+  h1 { font-size: 1.6em; font-weight: 700; letter-spacing: -0.02em; }
+  .subtitle { color: #6e6e73; font-size: 0.9em; margin-top: 4px; }
+
+  .format-note {
+    background: #eef2ff; border-left: 3px solid #6366f1;
+    border-radius: 0 8px 8px 0; padding: 12px 16px;
+    font-size: 12px; color: #3730a3; margin-bottom: 20px; line-height: 1.6;
+  }
+  .format-note code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: rgba(99,102,241,.12); padding: 1px 5px; border-radius: 3px;
+  }
+
+  .card {
+    background: white; border-radius: 12px; padding: 24px;
+    margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .card h2 {
+    font-size: 0.75em; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: #6e6e73; margin-bottom: 16px;
+  }
+
+  /* Fields */
+  .fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .fields { grid-template-columns: 1fr 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 0.78em; font-weight: 500; color: #6e6e73; }
+  .label-hint { font-weight: 400; color: #bbb; }
+
+  input[type="text"] {
+    border: 1.5px solid #e0e0e0; border-radius: 8px;
+    padding: 9px 12px; font-size: 0.95em;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    transition: border-color 0.15s; outline: none; background: white;
+    width: 100%;
+  }
+  input::placeholder { color: #ccc; opacity: 1; }
+  input:focus { border-color: #6366f1; }
+  input.valid { border-color: #34c759; }
+  input.invalid { border-color: #ff3b30; background: #fff5f5; }
+
+  /* Paste area */
+  .paste-wrap { display: flex; gap: 8px; align-items: stretch; }
+  .paste-wrap input { flex: 1; font-size: 0.85em; letter-spacing: 0.02em; }
+  .parse-btn {
+    padding: 9px 16px; background: #1d1d1f; color: white;
+    border: none; border-radius: 8px; font-size: 0.88em;
+    font-weight: 500; cursor: pointer; white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .parse-btn:hover { background: #333; }
+
+  .verify-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.82em; font-weight: 600; padding: 6px 10px;
+    border-radius: 6px; margin-top: 10px;
+  }
+  .verify-badge.ok   { background: #f0fdf4; color: #16a34a; }
+  .verify-badge.err  { background: #fff5f5; color: #dc2626; }
+  .verify-badge.warn { background: #fffbeb; color: #d97706; }
+
+  /* Dual output */
+  .dual-output {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;
+  }
+  @media (max-width: 620px) { .dual-output { grid-template-columns: 1fr; } }
+
+  .output-card {
+    background: white; border-radius: 12px; padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .output-card h2 {
+    font-size: 0.75em; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: #6e6e73; margin-bottom: 12px;
+  }
+  .output-card .spec-tag {
+    display: inline-block; font-size: 0.72em; font-weight: 600;
+    background: #f5f5f7; color: #6e6e73; border-radius: 4px;
+    padding: 2px 7px; margin-bottom: 12px; letter-spacing: 0.04em;
+  }
+
+  .output-code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.95em; letter-spacing: 0.03em;
+    background: #f5f5f7; border-radius: 8px;
+    padding: 12px 14px; word-break: break-all; line-height: 1.7;
+    min-height: 50px;
+  }
+
+  .seg-url   { color: #6e6e73; }
+  .seg-po    { color: #e67e22; }
+  .seg-sku   { color: #8e44ad; }
+  .seg-ship  { color: #27ae60; }
+  .seg-boxes { color: #27ae60; }
+  .seg-box   { color: #27ae60; }
+  .seg-qty   { color: #0071e3; }
+  .seg-sep   { color: #bbb; }
+  .seg-colon { color: #bbb; font-weight: 700; }
+  .seg-check { background: rgba(99,102,241,0.15); border-radius: 3px; padding: 1px 3px; font-weight: 700; }
+
+  .code-length {
+    font-size: 0.75em; color: #94a3b8; margin-top: 6px;
+  }
+
+  .qr-wrap {
+    display: flex; justify-content: center; padding: 14px 0 8px;
+  }
+  #qr-v40 canvas, #qr-v40 img,
+  #qr-v41 canvas, #qr-v41 img { border-radius: 6px; }
+
+  .output-status {
+    font-size: 0.78em; padding: 5px 9px; border-radius: 6px;
+    margin-top: 8px; display: none;
+  }
+  .output-status.ok  { background: #f0fdf4; color: #16a34a; display: block; }
+  .output-status.err { background: #fff5f5; color: #dc2626; display: block; }
+
+  .copy-btn {
+    margin-top: 10px; padding: 7px 16px;
+    background: #6366f1; color: white;
+    border: none; border-radius: 7px; font-size: 0.85em;
+    font-weight: 500; cursor: pointer; transition: opacity 0.15s;
+    width: 100%;
+  }
+  .copy-btn:hover { opacity: 0.88; }
+  .copy-btn.copied { background: #34c759; }
+
+  /* Legend */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.78em; color: #6e6e73; }
+  .dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* Algo box */
+  .algo-detail {
+    font-size: 0.82em; color: #6e6e73; background: #f5f5f7;
+    border-radius: 8px; padding: 12px 14px; line-height: 1.7;
+  }
+  .algo-detail code {
+    background: #e8e8ed; padding: 1px 4px; border-radius: 3px; font-size: 0.95em;
+  }
+
+  .placeholder-msg {
+    color: #bbb; font-style: italic; font-family: sans-serif; font-size: 0.9em;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <a href="index.html" class="back-link">← Back to tools</a>
+
+  <header>
+    <h1>SP QR Code Checker — v4</h1>
+    <p class="subtitle">v4.0 (URL) and v4.1 (no URL) · Two check chars, mod 37 (A–Z + 0–9 + $) · Same check logic for both formats</p>
+  </header>
+
+  <div class="format-note">
+    <strong>v4.0 URL:</strong> <code>HTTPS://QR.SWAPPIE.COM/POFI-00088285-SMAPLP1003-01-05-03-0010:BK</code> · V4-Q · 67 char capacity<br>
+    <strong>v4.1 no URL:</strong> <code>POFI-00088285-SMAPLP1003-01-05-03-0010:BK</code> · V3-Q · 47 char capacity<br>
+    The check characters are identical in both — the URL prefix is not included in the calculation.
+  </div>
+
+  <!-- Paste & Validate -->
+  <div class="card">
+    <h2>Paste a code to validate</h2>
+    <div class="paste-wrap">
+      <input type="text" id="pasteInput" placeholder="POFI-00088285-SMAPLP1003-01-05-03-0010:BK  or full URL version" autocomplete="off" spellcheck="false">
+      <button class="parse-btn" onclick="parseAndFill()">Parse →</button>
+    </div>
+    <div id="parseBadge" style="display:none"></div>
+  </div>
+
+  <!-- Fields -->
+  <div class="card">
+    <h2>Code details</h2>
+    <div class="fields">
+      <div class="field">
+        <label>PO Number <span class="label-hint">POFI-00088285</span></label>
+        <input type="text" id="f-po" maxlength="13" placeholder="POFI-00088285" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label>SKU <span class="label-hint">SM/TB/LT + APLP + 1–5 digits</span></label>
+        <input type="text" id="f-sku" maxlength="11" placeholder="SMAPLP1003" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label>Shipment # <span class="label-hint">01–99</span></label>
+        <input type="text" id="f-ship" maxlength="2" placeholder="01" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label>Total Boxes <span class="label-hint">01–99</span></label>
+        <input type="text" id="f-boxes" maxlength="2" placeholder="05" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label>Box # <span class="label-hint">01–99</span></label>
+        <input type="text" id="f-box" maxlength="2" placeholder="03" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label>Batch Qty <span class="label-hint">0001–9999</span></label>
+        <input type="text" id="f-qty" maxlength="4" placeholder="0010" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="dot" style="background:#e67e22"></div>PO number</div>
+      <div class="legend-item"><div class="dot" style="background:#8e44ad"></div>SKU</div>
+      <div class="legend-item"><div class="dot" style="background:#27ae60"></div>Shipment / Boxes / Box#</div>
+      <div class="legend-item"><div class="dot" style="background:#0071e3"></div>Batch qty</div>
+      <div class="legend-item"><div class="dot" style="background:rgba(99,102,241,0.4)"></div>Check chars</div>
+    </div>
+  </div>
+
+  <!-- Dual output -->
+  <div class="dual-output">
+
+    <div class="output-card">
+      <h2>v4.0 — URL format</h2>
+      <div class="spec-tag">QR Version 4-Q · 67 char capacity</div>
+      <div class="output-code" id="out-v40">
+        <span class="placeholder-msg">Fill in the fields above…</span>
+      </div>
+      <div class="code-length" id="len-v40"></div>
+      <div class="output-status" id="status-v40"></div>
+      <div class="qr-wrap"><div id="qr-v40"></div></div>
+      <button class="copy-btn" id="copy-v40" onclick="copyCode('v40')">Copy v4.0 code</button>
+    </div>
+
+    <div class="output-card">
+      <h2>v4.1 — No URL</h2>
+      <div class="spec-tag">QR Version 3-Q · 47 char capacity</div>
+      <div class="output-code" id="out-v41">
+        <span class="placeholder-msg">Fill in the fields above…</span>
+      </div>
+      <div class="code-length" id="len-v41"></div>
+      <div class="output-status" id="status-v41"></div>
+      <div class="qr-wrap"><div id="qr-v41"></div></div>
+      <button class="copy-btn" id="copy-v41" onclick="copyCode('v41')">Copy v4.1 code</button>
+    </div>
+
+  </div>
+
+  <!-- Algorithm -->
+  <div class="card">
+    <h2>How the check characters are calculated</h2>
+    <div class="algo-detail">
+      Check chars are computed over the <strong>path only</strong> — e.g. <code>POFI-00088285-SMAPLP1003-01-05-03-0010</code> — regardless of whether a URL prefix is present. That's why v4.0 and v4.1 produce identical check chars for the same data.<br><br>
+      Character values: <code>0–9 → 0–9</code> &nbsp; <code>A–Z → 10–35</code> &nbsp; <code>- → 36</code><br><br>
+      <strong>Check char 1</strong> (multiplier 31): &nbsp;<code>acc = (acc × 31 + char_value) mod 37</code><br>
+      <strong>Check char 2</strong> (multiplier 17): &nbsp;<code>acc = (acc × 17 + char_value) mod 37</code><br><br>
+      Output alphabet (37 symbols, prime modulus): <code>A–Z (0–25) · 0–9 (26–35) · $ (36)</code><br><br>
+      Error detection: 100% for single-char errors and adjacent transpositions · 99.93% for any two wrong chars.
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Check char algorithm — v4, two chars, mod 37
+const OUT_ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$'; // 37 chars (prime)
+const URL_PREFIX = 'HTTPS://QR.SWAPPIE.COM/';
+
+function charVal(c) {
+  if (c >= '0' && c <= '9') return c.charCodeAt(0) - 48;
+  if (c >= 'A' && c <= 'Z') return c.charCodeAt(0) - 65 + 10;
+  if (c === '-') return 36;
+  return -1;
+}
+
+function computeHash(str, mult) {
+  let acc = 0;
+  for (const c of str) {
+    const v = charVal(c);
+    if (v < 0) return null;
+    acc = (acc * mult + v) % 37;
+  }
+  return OUT_ALPHA[acc];
+}
+
+function computeChecks(path) {
+  const c1 = computeHash(path, 31);
+  const c2 = computeHash(path, 17);
+  if (!c1 || !c2) return null;
+  return c1 + c2;
+}
+
+function buildPath(po, sku, ship, boxes, box, qty) {
+  return `${po}-${sku}-${ship}-${boxes}-${box}-${qty}`;
+}
+
+// State
+let codeV40 = '';
+let codeV41 = '';
+
+// Field validation
+function setValidity(id, ok) {
+  const el = document.getElementById(id);
+  if (!el.value.trim()) { el.classList.remove('valid','invalid'); return; }
+  el.classList.toggle('valid', ok);
+  el.classList.toggle('invalid', !ok);
+}
+
+function getFields() {
+  const po    = document.getElementById('f-po').value.trim().toUpperCase();
+  const sku   = document.getElementById('f-sku').value.trim().toUpperCase();
+  const ship  = document.getElementById('f-ship').value.trim();
+  const boxes = document.getElementById('f-boxes').value.trim();
+  const box   = document.getElementById('f-box').value.trim();
+  const qty   = document.getElementById('f-qty').value.trim();
+  return { po, sku, ship, boxes, box, qty };
+}
+
+// Render the colored code string
+function renderCodeHTML(path, checks, includeUrl) {
+  const parts = path.split('-');
+  if (parts.length < 7) return '<span class="placeholder-msg">Invalid path</span>';
+  const po_c  = parts[0];
+  const po_n  = parts[1];
+  const sku   = parts[2];
+  const ship  = parts[3];
+  const bxs   = parts[4];
+  const bx    = parts[5];
+  const qty   = parts[6];
+
+  const c1 = checks ? `<span class="seg-check">${checks[0]}</span>` : '';
+  const c2 = checks ? `<span class="seg-check">${checks[1]}</span>` : '';
+
+  const urlPart = includeUrl ? `<span class="seg-url">${URL_PREFIX}</span>` : '';
+
+  return urlPart +
+    `<span class="seg-po">${po_c}<span class="seg-sep">-</span>${po_n}</span>` +
+    `<span class="seg-sep">-</span>` +
+    `<span class="seg-sku">${sku}</span>` +
+    `<span class="seg-sep">-</span>` +
+    `<span class="seg-ship">${ship}</span>` +
+    `<span class="seg-sep">-</span>` +
+    `<span class="seg-boxes">${bxs}</span>` +
+    `<span class="seg-sep">-</span>` +
+    `<span class="seg-box">${bx}</span>` +
+    `<span class="seg-sep">-</span>` +
+    `<span class="seg-qty">${qty}</span>` +
+    `<span class="seg-colon">:</span>` +
+    c1 + c2;
+}
+
+// QR rendering
+function renderQR(elId, text) {
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  if (!text) return;
+  new QRCode(el, {
+    text: text,
+    width: 180,
+    height: 180,
+    correctLevel: QRCode.CorrectLevel.Q,
+    colorDark: '#1d1d1f',
+    colorLight: '#ffffff',
+  });
+}
+
+// Main update
+function update() {
+  const { po, sku, ship, boxes, box, qty } = getFields();
+
+  const poOk    = /^PO[A-Z]{2}-\d{8}$/.test(po);
+  const skuOk   = /^(SM|TB|LT)APLP\d{1,5}$/.test(sku);
+  const shipOk  = /^\d{2}$/.test(ship) && +ship >= 1;
+  const boxesOk = /^\d{2}$/.test(boxes) && +boxes >= 1;
+  const boxOk   = /^\d{2}$/.test(box) && +box >= 1 && +box <= +boxes;
+  const qtyOk   = /^\d{4}$/.test(qty) && +qty >= 1;
+
+  setValidity('f-po',    poOk);
+  setValidity('f-sku',   skuOk);
+  setValidity('f-ship',  shipOk);
+  setValidity('f-boxes', boxesOk);
+  setValidity('f-box',   boxOk);
+  setValidity('f-qty',   qtyOk);
+
+  const allEmpty = !po && !sku && !ship && !boxes && !box && !qty;
+  const allOk = poOk && skuOk && shipOk && boxesOk && boxOk && qtyOk;
+
+  codeV40 = '';
+  codeV41 = '';
+
+  if (allEmpty) { setOutputPlaceholder(); return; }
+  if (!allOk)   { setOutputIncomplete();  return; }
+
+  const path   = buildPath(po, sku, ship, boxes, box, qty);
+  const checks = computeChecks(path);
+
+  if (!checks) { setOutputError('Unexpected character in path'); return; }
+
+  codeV40 = URL_PREFIX + path + ':' + checks;
+  codeV41 = path + ':' + checks;
+
+  // v4.0
+  document.getElementById('out-v40').innerHTML = renderCodeHTML(path, checks, true);
+  document.getElementById('len-v40').textContent = codeV40.length + ' chars (capacity 67, headroom ' + (67 - codeV40.length) + ')';
+  setStatus('status-v40', codeV40.length <= 67 ? 'ok' : 'err',
+    codeV40.length <= 67 ? '✓ Fits V4-Q capacity' : '✗ Exceeds V4-Q capacity!');
+  renderQR('qr-v40', codeV40);
+
+  // v4.1
+  document.getElementById('out-v41').innerHTML = renderCodeHTML(path, checks, false);
+  document.getElementById('len-v41').textContent = codeV41.length + ' chars (capacity 47, headroom ' + (47 - codeV41.length) + ')';
+  setStatus('status-v41', codeV41.length <= 47 ? 'ok' : 'err',
+    codeV41.length <= 47 ? '✓ Fits V3-Q capacity' : '✗ Exceeds V3-Q capacity!');
+  renderQR('qr-v41', codeV41);
+}
+
+function setOutputPlaceholder() {
+  const ph = '<span class="placeholder-msg">Fill in the fields above…</span>';
+  document.getElementById('out-v40').innerHTML = ph;
+  document.getElementById('out-v41').innerHTML = ph;
+  document.getElementById('len-v40').textContent = '';
+  document.getElementById('len-v41').textContent = '';
+  hideStatus('status-v40');
+  hideStatus('status-v41');
+  renderQR('qr-v40', '');
+  renderQR('qr-v41', '');
+}
+
+function setOutputIncomplete() {
+  const ph = '<span class="placeholder-msg">Complete all fields correctly…</span>';
+  document.getElementById('out-v40').innerHTML = ph;
+  document.getElementById('out-v41').innerHTML = ph;
+  document.getElementById('len-v40').textContent = '';
+  document.getElementById('len-v41').textContent = '';
+  hideStatus('status-v40');
+  hideStatus('status-v41');
+  renderQR('qr-v40', '');
+  renderQR('qr-v41', '');
+}
+
+function setOutputError(msg) {
+  document.getElementById('out-v40').innerHTML = '<span class="placeholder-msg">' + msg + '</span>';
+  document.getElementById('out-v41').innerHTML = '<span class="placeholder-msg">' + msg + '</span>';
+}
+
+function setStatus(id, cls, msg) {
+  const el = document.getElementById(id);
+  el.className = 'output-status ' + cls;
+  el.textContent = msg;
+}
+
+function hideStatus(id) {
+  document.getElementById(id).className = 'output-status';
+}
+
+// Paste & parse
+const PATH_RE = /^(PO[A-Z]{2})-(\d{8})-((?:SM|TB|LT)APLP\d{1,5})-(\d{2})-(\d{2})-(\d{2})-(\d{4})(?::([A-Z0-9$]{2}))?$/;
+
+function parseAndFill() {
+  const raw = document.getElementById('pasteInput').value.trim().toUpperCase();
+  const badge = document.getElementById('parseBadge');
+
+  if (!raw) { badge.style.display = 'none'; return; }
+
+  let pathPart = raw;
+  let wasUrl = false;
+  if (raw.startsWith(URL_PREFIX)) {
+    pathPart = raw.slice(URL_PREFIX.length);
+    wasUrl = true;
+  } else if (raw.startsWith('HTTPS://QR.SWAPP.IE/')) {
+    pathPart = raw.slice('HTTPS://QR.SWAPP.IE/'.length);
+    wasUrl = true;
+  }
+
+  const m = pathPart.match(PATH_RE);
+  if (!m) {
+    showBadge(badge, 'err', '✗ Cannot parse — does not match v4 format');
+    return;
+  }
+
+  const [, po_c, po_n, sku, ship, boxes, box, qty, existingChecks] = m;
+  const po = po_c + '-' + po_n;
+
+  document.getElementById('f-po').value    = po;
+  document.getElementById('f-sku').value   = sku;
+  document.getElementById('f-ship').value  = ship;
+  document.getElementById('f-boxes').value = boxes;
+  document.getElementById('f-box').value   = box;
+  document.getElementById('f-qty').value   = qty;
+
+  update();
+
+  if (existingChecks) {
+    const path = buildPath(po, sku, ship, boxes, box, qty);
+    const expected = computeChecks(path);
+    const format = wasUrl ? 'v4.0 (URL)' : 'v4.1 (no URL)';
+    if (existingChecks === expected) {
+      showBadge(badge, 'ok', `✓ Valid ${format} code — check chars "${existingChecks}" correct`);
+    } else {
+      showBadge(badge, 'err', `✗ ${format} — check chars "${existingChecks}" WRONG, expected "${expected}"`);
+    }
+  } else {
+    const format = wasUrl ? 'v4.0 (URL)' : 'v4.1 (no URL)';
+    showBadge(badge, 'warn', `⚠ ${format} parsed — no check chars in pasted string, generated below`);
+  }
+}
+
+function showBadge(el, cls, msg) {
+  el.className = 'verify-badge ' + cls;
+  el.textContent = msg;
+  el.style.display = 'inline-flex';
+}
+
+// Copy buttons
+function copyCode(ver) {
+  const code = ver === 'v40' ? codeV40 : codeV41;
+  const btnId = 'copy-' + ver;
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById(btnId);
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+}
+
+// Wire up events
+['f-po','f-sku','f-ship','f-boxes','f-box','f-qty'].forEach(id => {
+  document.getElementById(id).addEventListener('input', update);
+});
+
+document.getElementById('pasteInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') parseAndFill();
+});
+</script>
+</body>
+</html>

@@ -41,7 +41,7 @@
     font-size: 14px;
     color: rgba(255,255,255,.55);
     margin-top: 8px;
-    max-width: 520px;
+    max-width: 560px;
     line-height: 1.6;
   }
 
@@ -55,8 +55,21 @@
     margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 10px;
     flex-wrap: wrap;
+  }
+  .strip-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: rgba(255,255,255,.3);
+    padding: 0 4px;
+  }
+  .strip-divider {
+    width: 1px; height: 16px;
+    background: rgba(255,255,255,.12);
+    margin: 0 4px;
   }
   .badge {
     display: inline-flex;
@@ -70,12 +83,14 @@
   .badge-purple { background: rgba(99,102,241,.2); color: #a5b4fc; }
   .badge-green  { background: rgba(34,197,94,.15); color: #86efac; }
   .badge-amber  { background: rgba(251,191,36,.15); color: #fcd34d; }
-  .badge-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-  }
+  .badge-blue   { background: rgba(56,189,248,.15); color: #7dd3fc; }
+  .badge-rose   { background: rgba(251,113,133,.15); color: #fda4af; }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
   .badge-purple .badge-dot { background: #818cf8; }
   .badge-green  .badge-dot { background: #4ade80; }
   .badge-amber  .badge-dot { background: #fbbf24; }
+  .badge-blue   .badge-dot { background: #38bdf8; }
+  .badge-rose   .badge-dot { background: #fb7185; }
 
   .container {
     max-width: 860px;
@@ -83,20 +98,48 @@
     padding: 36px 20px 60px;
   }
 
-  .section-title {
-    font-size: 11px;
+  /* Section groups */
+  .section-group { margin-bottom: 44px; }
+
+  .section-group-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .section-group-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -.2px;
+    color: #1a1a2e;
+  }
+  .section-group-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.5;
+    flex: 1;
+    min-width: 200px;
+  }
+  .group-badge {
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .8px;
-    color: #94a3b8;
-    margin-bottom: 16px;
+    letter-spacing: .5px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
+  .group-badge-green { background: #dcfce7; color: #166534; }
+  .group-badge-amber { background: #fef9c3; color: #854d0e; }
 
   .tools-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: 16px;
-    margin-bottom: 40px;
   }
 
   .tool-card {
@@ -126,26 +169,12 @@
   .tool-card.purple::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
   .tool-card.green::before  { background: linear-gradient(90deg, #22c55e, #16a34a); }
   .tool-card.amber::before  { background: linear-gradient(90deg, #f59e0b, #d97706); }
+  .tool-card.blue::before   { background: linear-gradient(90deg, #0ea5e9, #6366f1); }
+  .tool-card.teal::before   { background: linear-gradient(90deg, #14b8a6, #0ea5e9); }
 
-  .tool-icon {
-    font-size: 28px;
-    margin-bottom: 14px;
-    line-height: 1;
-  }
-
-  .tool-title {
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: -.2px;
-    margin-bottom: 6px;
-  }
-
-  .tool-desc {
-    font-size: 13px;
-    color: #64748b;
-    line-height: 1.6;
-    flex: 1;
-  }
+  .tool-icon { font-size: 28px; margin-bottom: 14px; line-height: 1; }
+  .tool-title { font-size: 17px; font-weight: 700; letter-spacing: -.2px; margin-bottom: 6px; }
+  .tool-desc { font-size: 13px; color: #64748b; line-height: 1.6; flex: 1; }
 
   .tool-footer {
     display: flex;
@@ -155,120 +184,80 @@
     padding-top: 16px;
     border-top: 1px solid #f1f5f9;
   }
-
-  .tool-tags {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
+  .tool-tags { display: flex; gap: 6px; flex-wrap: wrap; }
   .tag {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .4px;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: #f1f5f9;
-    color: #64748b;
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .4px; padding: 2px 7px; border-radius: 4px;
+    background: #f1f5f9; color: #64748b;
   }
+  .tool-arrow { font-size: 18px; color: #cbd5e1; transition: color .15s, transform .15s; }
+  .tool-card:hover .tool-arrow { color: #6366f1; transform: translateX(3px); }
 
-  .tool-arrow {
-    font-size: 18px;
-    color: #cbd5e1;
-    transition: color .15s, transform .15s;
+  /* Spec reference */
+  .section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; color: #94a3b8; margin-bottom: 16px;
   }
-  .tool-card:hover .tool-arrow {
-    color: #6366f1;
-    transform: translateX(3px);
-  }
-
-  /* ── Spec section ── */
   .spec-card {
-    background: #fff;
-    border-radius: 14px;
-    border: 1px solid #e2e8f0;
-    padding: 28px;
-    margin-bottom: 16px;
+    background: #fff; border-radius: 14px; border: 1px solid #e2e8f0;
+    padding: 28px; margin-bottom: 16px;
   }
-
-  .spec-title {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 16px;
-    color: #1a1a2e;
+  .spec-card-title {
+    font-size: 14px; font-weight: 700; margin-bottom: 16px;
+    color: #1a1a2e; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   }
-
   .spec-code {
     font-family: "SF Mono", "Fira Code", monospace;
-    font-size: 13px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 14px 16px;
-    letter-spacing: .3px;
-    line-height: 1.8;
-    overflow-x: auto;
-    white-space: nowrap;
-    margin-bottom: 16px;
+    font-size: 13px; background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 8px; padding: 14px 16px; letter-spacing: .3px;
+    line-height: 1.8; overflow-x: auto; white-space: nowrap; margin-bottom: 16px;
   }
 
-  .seg { display: inline; }
-  .s-qty   { color: #2563eb; font-weight: 600; }
-  .s-sku   { color: #7c3aed; font-weight: 600; }
-  .s-po    { color: #d97706; font-weight: 600; }
-  .s-nav   { color: #16a34a; font-weight: 600; }
-  .s-chk   { background: #1a1a2e; color: #fff; border-radius: 3px; padding: 0 4px; font-weight: 700; }
+  /* v3 segments */
+  .s-qty  { color: #2563eb; font-weight: 600; }
+  .s-sku  { color: #7c3aed; font-weight: 600; }
+  .s-po   { color: #d97706; font-weight: 600; }
+  .s-nav  { color: #16a34a; font-weight: 600; }
+  .s-chk  { background: #1a1a2e; color: #fff; border-radius: 3px; padding: 0 4px; font-weight: 700; }
+
+  /* v4 segments */
+  .s-url   { color: #94a3b8; }
+  .s-v4po  { color: #d97706; font-weight: 600; }
+  .s-v4sku { color: #7c3aed; font-weight: 600; }
+  .s-v4nav { color: #16a34a; font-weight: 600; }
+  .s-v4qty { color: #2563eb; font-weight: 600; }
+  .s-v4chk { background: #3730a3; color: #fff; border-radius: 3px; padding: 0 4px; font-weight: 700; }
 
   .spec-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
+    display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;
   }
   .spec-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 12px;
-    color: #475569;
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; color: #475569;
   }
-  .spec-dot {
-    width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0;
-  }
+  .spec-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
-  .algo-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 16px;
-  }
+  .algo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
   @media (max-width: 580px) {
     .algo-row { grid-template-columns: 1fr; }
     .tools-grid { grid-template-columns: 1fr; }
   }
-
   .algo-item {
-    background: #f8fafc;
-    border-radius: 8px;
-    padding: 12px 14px;
-    font-size: 12px;
-    color: #475569;
-    line-height: 1.6;
+    background: #f8fafc; border-radius: 8px; padding: 12px 14px;
+    font-size: 12px; color: #475569; line-height: 1.6;
   }
-  .algo-item strong { color: #1a1a2e; display: block; margin-bottom: 3px; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+  .algo-item strong {
+    color: #1a1a2e; display: block; margin-bottom: 3px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: .4px;
+  }
   .algo-item code {
     font-family: "SF Mono", "Fira Code", monospace;
-    background: #e2e8f0;
-    padding: 1px 4px;
-    border-radius: 3px;
+    background: #e2e8f0; padding: 1px 4px; border-radius: 3px;
   }
 
   footer {
-    border-top: 1px solid #e2e8f0;
-    padding: 20px 32px;
-    text-align: center;
-    font-size: 12px;
-    color: #94a3b8;
+    border-top: 1px solid #e2e8f0; padding: 20px 32px;
+    text-align: center; font-size: 12px; color: #94a3b8;
   }
   footer a { color: #6366f1; text-decoration: none; }
   footer a:hover { text-decoration: underline; }
@@ -280,95 +269,243 @@
   <div class="header-inner">
     <div class="header-eyebrow">SP Tools</div>
     <h1>Spare Parts QR Tools</h1>
-    <p>Tools for generating and validating spare parts LOT labels using the v3 QR code spec with check digit error detection.</p>
+    <p>Generate and validate spare parts LOT labels. v3 is in production; v4 adds EU Battery Regulation compliance with URL-based QR codes and two check characters.</p>
   </div>
 </header>
 
 <div class="version-strip">
   <div class="version-strip-inner">
-    <span class="badge badge-purple"><span class="badge-dot"></span>Spec v3 · MOD 29</span>
-    <span class="badge badge-green"><span class="badge-dot"></span>Check digit enabled</span>
-    <span class="badge badge-amber"><span class="badge-dot"></span>QR Version 2 · ECC Medium</span>
+    <span class="strip-label">v3</span>
+    <span class="badge badge-purple"><span class="badge-dot"></span>MOD 29 · 1 check char</span>
+    <span class="badge badge-green"><span class="badge-dot"></span>In production</span>
+    <span class="badge badge-amber"><span class="badge-dot"></span>QR V2-M</span>
+    <span class="strip-divider"></span>
+    <span class="strip-label">v4</span>
+    <span class="badge badge-blue"><span class="badge-dot"></span>MOD 37 · 2 check chars</span>
+    <span class="badge badge-blue"><span class="badge-dot"></span>URL QR · EU compliant</span>
+    <span class="badge badge-rose"><span class="badge-dot"></span>Draft — rollout paused</span>
   </div>
 </div>
 
 <div class="container">
 
-  <div class="section-title">Tools</div>
+  <!-- v3 -->
+  <div class="section-group">
+    <div class="section-group-header">
+      <div class="section-group-title">v3 — Current production</div>
+      <span class="group-badge group-badge-green">Live since Dec 2025</span>
+      <div class="section-group-desc">Plain text QR, one check char (mod 29), QR Version 2 ECC Medium.</div>
+    </div>
+    <div class="tools-grid">
 
-  <div class="tools-grid">
-
-    <a href="qr-checker.html" class="tool-card purple">
-      <div class="tool-icon">🔍</div>
-      <div class="tool-title">QR Code Checker</div>
-      <div class="tool-desc">
-        Build or validate a single QR code string field by field. Paste an existing code to verify its check letter, or enter fields manually to generate a new code with live QR preview.
-      </div>
-      <div class="tool-footer">
-        <div class="tool-tags">
-          <span class="tag">Single code</span>
-          <span class="tag">Validate</span>
-          <span class="tag">QR preview</span>
+      <a href="qr-checker.html" class="tool-card purple">
+        <div class="tool-icon">🔍</div>
+        <div class="tool-title">QR Code Checker</div>
+        <div class="tool-desc">
+          Build or validate a single v3 QR code field by field. Paste an existing code to verify its check letter, or enter fields manually to generate a new code with live QR preview.
         </div>
-        <span class="tool-arrow">→</span>
-      </div>
-    </a>
-
-    <a href="asn-generator.html" class="tool-card green">
-      <div class="tool-icon">📦</div>
-      <div class="tool-title">ASN Generator</div>
-      <div class="tool-desc">
-        Mass-generate QR codes for a full shipment. Enter the PO number, shipment number, and each SKU with its total quantity and batch size — get a complete ASN table with check digits, downloadable as Excel or CSV.
-      </div>
-      <div class="tool-footer">
-        <div class="tool-tags">
-          <span class="tag">Multi-SKU</span>
-          <span class="tag">Bulk generate</span>
-          <span class="tag">Excel / CSV</span>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span class="tag">Single code</span>
+            <span class="tag">Validate</span>
+            <span class="tag">QR preview</span>
+          </div>
+          <span class="tool-arrow">→</span>
         </div>
-        <span class="tool-arrow">→</span>
-      </div>
-    </a>
+      </a>
 
+      <a href="asn-generator.html" class="tool-card green">
+        <div class="tool-icon">📦</div>
+        <div class="tool-title">ASN Generator</div>
+        <div class="tool-desc">
+          Mass-generate v3 QR codes for a full shipment. Enter the PO number, shipment number, and each SKU with its total quantity and batch size — get a complete ASN table with check digits, downloadable as Excel or CSV.
+        </div>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span class="tag">Multi-SKU</span>
+            <span class="tag">Bulk generate</span>
+            <span class="tag">Excel / CSV</span>
+          </div>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+    </div>
   </div>
 
-  <!-- ── Spec reference ── -->
+  <!-- v4 -->
+  <div class="section-group">
+    <div class="section-group-header">
+      <div class="section-group-title">v4 — EU Battery Regulation</div>
+      <span class="group-badge group-badge-amber">Draft · Rollout paused</span>
+      <div class="section-group-desc">URL-based QR (opens browser directly), two check chars (mod 37). v4.0 for battery stickers; v4.1 for internal traceability only.</div>
+    </div>
+    <div class="tools-grid">
+
+      <a href="qr-checker-v4.html" class="tool-card blue">
+        <div class="tool-icon">🔍</div>
+        <div class="tool-title">QR Code Checker v4</div>
+        <div class="tool-desc">
+          Validate or generate v4 codes — shows v4.0 (URL) and v4.1 (no URL) side by side with live QR previews. Paste any v4 code to verify its two check characters, or fill in the fields to build a new one.
+        </div>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span class="tag">v4.0 + v4.1</span>
+            <span class="tag">Validate</span>
+            <span class="tag">QR preview</span>
+          </div>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+      <a href="asn-generator-v4.0.html" class="tool-card blue">
+        <div class="tool-icon">📦</div>
+        <div class="tool-title">ASN Generator v4.0</div>
+        <div class="tool-desc">
+          Bulk-generate v4.0 URL format codes — the EU Battery Regulation compliant battery sticker format. Codes open <code style="font-size:11px;background:#f1f5f9;padding:1px 4px;border-radius:3px;">qr.swappie.com</code> directly when scanned by recyclers or customers.
+        </div>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span class="tag">URL format</span>
+            <span class="tag">EU compliant</span>
+            <span class="tag">Excel / CSV</span>
+          </div>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+      <a href="asn-generator-v4.1.html" class="tool-card teal">
+        <div class="tool-icon">📦</div>
+        <div class="tool-title">ASN Generator v4.1</div>
+        <div class="tool-desc">
+          Bulk-generate v4.1 no-URL codes — same field structure and check chars as v4.0 but without the URL prefix. Intended for internal traceability where codes are only scanned by Hemuli, not by end users or recyclers.
+        </div>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span class="tag">No URL</span>
+            <span class="tag">Internal only</span>
+            <span class="tag">Excel / CSV</span>
+          </div>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+      <a href="battery.html" class="tool-card amber">
+        <div class="tool-icon">🔋</div>
+        <div class="tool-title">Battery Landing Page</div>
+        <div class="tool-desc">
+          Demo mockup of what end users and recyclers see when they scan a v4.0 battery sticker QR code. Shows EU Battery Regulation required information. Content and URL are not final.
+        </div>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span class="tag">Demo</span>
+            <span class="tag">EU compliance</span>
+            <span class="tag">Not final</span>
+          </div>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Spec reference -->
   <div class="section-title">Code Format Reference</div>
 
   <div class="spec-card">
-    <div class="spec-title">v3 Format</div>
-
+    <div class="spec-card-title">
+      v3 format
+      <span class="group-badge group-badge-green">Production</span>
+    </div>
     <div class="spec-code">
 <span class="s-qty">0155</span><span class="s-sku">SMAPLP1829</span><span class="s-po">POFI-00090005</span>-<span class="s-nav">01</span>-<span class="s-nav">15</span>-<span class="s-nav">01</span><span class="s-chk">J</span>
     </div>
-
     <div class="spec-legend">
       <div class="spec-legend-item"><div class="spec-dot" style="background:#2563eb"></div>Batch qty — 4 digits, zero-padded</div>
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#7c3aed"></div>SKU — 9–11 chars, starts with letter</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#7c3aed"></div>SKU — 9–11 chars</div>
       <div class="spec-legend-item"><div class="spec-dot" style="background:#d97706"></div>PO number — PO + 2 letters + hyphen + 8 digits</div>
       <div class="spec-legend-item"><div class="spec-dot" style="background:#16a34a"></div>Shipment # · Total boxes · Box # — all 2-digit</div>
       <div class="spec-legend-item"><div class="spec-dot" style="background:#1a1a2e"></div>Check letter — A–Z or $ % *</div>
     </div>
-
     <div class="algo-row">
       <div class="algo-item">
         <strong>Algorithm</strong>
         <code>acc = (acc × 31 + val(c)) mod 29</code><br>
-        Run left to right over all characters (excluding check letter). Map result to output alphabet.
+        Rolling hash over all chars. Map result to output alphabet.
       </div>
       <div class="algo-item">
         <strong>Output alphabet (29 chars · prime)</strong>
         <code>A–Z</code> + <code>$</code> <code>%</code> <code>*</code><br>
-        Prime modulus guarantees 100% detection of single-char errors and adjacent transpositions.
+        100% detection of single-char errors and adjacent transpositions.
       </div>
       <div class="algo-item">
         <strong>Character values</strong>
-        <code>0–9 → 0–9</code> &nbsp; <code>A–Z → 10–35</code> &nbsp; <code>- → 36</code><br>
-        Hyphen is included in the computation, so a shifted hyphen is always detected.
+        <code>0–9 → 0–9</code> &nbsp; <code>A–Z → 10–35</code> &nbsp; <code>- → 36</code>
       </div>
       <div class="algo-item">
-        <strong>Validation regex</strong>
-        <code>^\d{4}[A-Z][A-Z0-9]{8,10}PO[A-Z]{2}-\d{8}-\d{2}-\d{2}-\d{2}[A-Z$%*]$</code>
+        <strong>QR spec</strong>
+        Version 2 · ECC Medium (15%) · Alphanumeric · 38 char capacity
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-card">
+    <div class="spec-card-title">
+      v4.0 format — URL, battery sticker (EU compliant)
+      <span class="group-badge group-badge-amber">Draft</span>
+    </div>
+    <div class="spec-code">
+<span class="s-url">HTTPS://QR.SWAPPIE.COM/</span><span class="s-v4po">POFI-00090005</span>-<span class="s-v4sku">SMAPLP1829</span>-<span class="s-v4nav">01</span>-<span class="s-v4nav">15</span>-<span class="s-v4nav">01</span>-<span class="s-v4qty">0155</span>:<span class="s-v4chk">BK</span>
+    </div>
+    <div class="spec-legend">
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#94a3b8"></div>URL prefix — opens browser directly when scanned</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#d97706"></div>PO number — country code first</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#7c3aed"></div>SKU</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#16a34a"></div>Shipment # · Total boxes · Box #</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#2563eb"></div>Batch qty — last field</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#3730a3"></div>Two check chars — A–Z, 0–9, $</div>
+    </div>
+    <div class="algo-row">
+      <div class="algo-item">
+        <strong>Two independent check chars</strong>
+        Char 1: <code>acc = (acc × 31 + val(c)) mod 37</code><br>
+        Char 2: <code>acc = (acc × 17 + val(c)) mod 37</code>
+      </div>
+      <div class="algo-item">
+        <strong>Output alphabet (37 chars · prime)</strong>
+        <code>A–Z</code> + <code>0–9</code> + <code>$</code><br>
+        100% single + double error detection; 99.93% for three+.
+      </div>
+      <div class="algo-item">
+        <strong>Computed over path only</strong>
+        URL prefix excluded — v4.0 and v4.1 produce identical check chars for the same data.
+      </div>
+      <div class="algo-item">
+        <strong>QR spec</strong>
+        Version 4 · ECC Q (25%) · Alphanumeric · 67 char capacity
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-card">
+    <div class="spec-card-title">
+      v4.1 format — no URL (internal traceability only)
+      <span class="group-badge group-badge-amber">Draft</span>
+    </div>
+    <div class="spec-code">
+<span class="s-v4po">POFI-00090005</span>-<span class="s-v4sku">SMAPLP1829</span>-<span class="s-v4nav">01</span>-<span class="s-v4nav">15</span>-<span class="s-v4nav">01</span>-<span class="s-v4qty">0155</span>:<span class="s-v4chk">BK</span>
+    </div>
+    <div class="spec-legend">
+      <div class="spec-legend-item">Same field structure and check chars as v4.0 — only the URL prefix is removed. For use where codes are scanned by Hemuli only, not by end users or recyclers.</div>
+    </div>
+    <div class="algo-row">
+      <div class="algo-item">
+        <strong>QR spec</strong>
+        Version 3 · ECC Q (25%) · Alphanumeric · 47 char capacity · 5 chars headroom at max SKU length
+      </div>
+      <div class="algo-item">
+        <strong>Check chars</strong>
+        Identical to v4.0 for the same data. Strip URL prefix first if present, then verify with the same algorithm.
       </div>
     </div>
   </div>
@@ -376,7 +513,7 @@
 </div>
 
 <footer>
-  SP tools v3.1 · <a href="https://github.com/tokurvin/sp-qr-tool" target="_blank">GitHub</a>
+  SP tools · v3 production · v4 draft · <a href="https://github.com/tokurvin/sp-qr-tool" target="_blank">GitHub</a>
 </footer>
 
 </body>

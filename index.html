@@ -253,6 +253,7 @@
   .algo-item code {
     font-family: "SF Mono", "Fira Code", monospace;
     background: #e2e8f0; padding: 1px 4px; border-radius: 3px;
+    font-size: 11px; word-break: break-all;
   }
 
   footer {
@@ -269,15 +270,19 @@
   <div class="header-inner">
     <div class="header-eyebrow">SP Tools</div>
     <h1>Spare Parts QR Tools</h1>
-    <p>Generate and validate spare parts LOT labels. v3 is in production; v4 adds EU Battery Regulation compliance with URL-based QR codes and two check characters.</p>
+    <p>Generate and validate spare parts LOT labels. v1 (no check char) is in production; v3 adds error detection but rollout is paused; v4 adds EU Battery Regulation compliance.</p>
   </div>
 </header>
 
 <div class="version-strip">
   <div class="version-strip-inner">
+    <span class="strip-label">v1</span>
+    <span class="badge badge-green"><span class="badge-dot"></span>In production</span>
+    <span class="badge badge-amber"><span class="badge-dot"></span>No check char · QR V2-M</span>
+    <span class="strip-divider"></span>
     <span class="strip-label">v3</span>
     <span class="badge badge-purple"><span class="badge-dot"></span>MOD 29 · 1 check char</span>
-    <span class="badge badge-green"><span class="badge-dot"></span>In production</span>
+    <span class="badge badge-rose"><span class="badge-dot"></span>Rollout paused</span>
     <span class="badge badge-amber"><span class="badge-dot"></span>QR V2-M</span>
     <span class="strip-divider"></span>
     <span class="strip-label">v4</span>
@@ -292,9 +297,9 @@
   <!-- v3 -->
   <div class="section-group">
     <div class="section-group-header">
-      <div class="section-group-title">v3 — Current production</div>
-      <span class="group-badge group-badge-green">Live since Dec 2025</span>
-      <div class="section-group-desc">Plain text QR, one check char (mod 29), QR Version 2 ECC Medium.</div>
+      <div class="section-group-title">v3 — Rollout paused</div>
+      <span class="group-badge group-badge-amber">Paused Apr 2026</span>
+      <div class="section-group-desc">Adds check char (mod 29) and shipment number to v1. Ready to ship, but rollout paused pending EU Battery Regulation clarity. Current production is still <strong>v1</strong> (no check char).</div>
     </div>
     <div class="tools-grid">
 
@@ -414,8 +419,43 @@
 
   <div class="spec-card">
     <div class="spec-card-title">
+      v1 format — current production
+      <span class="group-badge group-badge-green">Live since Dec 2025</span>
+    </div>
+    <div class="spec-code">
+<span class="s-qty">1234</span><span class="s-sku">LTAPLP98765</span><span class="s-po">POFI-12345678</span><span class="s-nav">99</span>-<span class="s-nav">11</span>
+    </div>
+    <div class="spec-legend">
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#2563eb"></div>Batch qty — 1–5 digits</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#7c3aed"></div>SKU — starts with SM/TB/LT + APLP + digits</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#d97706"></div>PO number — PO + 2 letters + hyphen + 8 digits</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#16a34a"></div>Total boxes (up to 4 digits) · Box # (up to 4 digits)</div>
+      <div class="spec-legend-item" style="color:#dc2626"><strong>No check character</strong> — no error detection</div>
+    </div>
+    <div class="algo-row">
+      <div class="algo-item">
+        <strong>No validation</strong>
+        No check char, no error detection. A mis-scan or typo passes through silently.
+      </div>
+      <div class="algo-item">
+        <strong>QR spec</strong>
+        Version 2 · ECC Medium (15%) · Alphanumeric · 38 char capacity
+      </div>
+      <div class="algo-item">
+        <strong>Regex</strong>
+        <code>^(?&lt;qty&gt;\d{1,5})(?&lt;SKU&gt;[a-zA-Z0-9]{7,11})(?&lt;PO&gt;pofi-\d{8})(?&lt;totalBoxes&gt;\d{1,4})-(?&lt;boxId&gt;\d{1,4})$</code>
+      </div>
+      <div class="algo-item">
+        <strong>Note</strong>
+        No separator between qty and SKU, or between PO and totalBoxes — fields are distinguished by their fixed patterns.
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-card">
+    <div class="spec-card-title">
       v3 format
-      <span class="group-badge group-badge-green">Production</span>
+      <span class="group-badge group-badge-amber">Rollout paused</span>
     </div>
     <div class="spec-code">
 <span class="s-qty">0155</span><span class="s-sku">SMAPLP1829</span><span class="s-po">POFI-00090005</span>-<span class="s-nav">01</span>-<span class="s-nav">15</span>-<span class="s-nav">01</span><span class="s-chk">J</span>
@@ -513,7 +553,7 @@
 </div>
 
 <footer>
-  SP tools · v3 production · v4 draft · <a href="https://github.com/tokurvin/sp-qr-tool" target="_blank">GitHub</a>
+  SP tools · v1 production · v3 paused · v4 draft · <a href="https://github.com/tokurvin/sp-qr-tool" target="_blank">GitHub</a>
 </footer>
 
 </body>

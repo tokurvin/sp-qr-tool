@@ -378,7 +378,8 @@
 // Alphabet: A–Z (0–25), 0–9 (26–35), $ (36) — 37 symbols (prime)
 // ─────────────────────────────────────────────
 const OUTPUT_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$"; // 37 chars (prime)
-const URL_PREFIX = "HTTPS://QR.SWAPPIE.CLOUD/";
+const URL_PREFIX = "HTTPS://QR.SWAPPIE.COM/";
+const DEMO_BASE   = "https://tokurvin.github.io/sp-qr-tool/battery.html#";
 
 function charValue(c) {
   const code = c.charCodeAt(0);
@@ -599,8 +600,6 @@ function generate() {
     totalBoxesAll += totalBoxes;
   });
 
-  // Event delegation is set up once via initQtyEditing()
-
   // Stats
   const statsBar = document.getElementById('stats-bar');
   statsBar.innerHTML = `
@@ -745,7 +744,7 @@ function rebuildResultTable() {
       '<td>' + newTotalBoxes + '</td>' +
       '<td>' + boxNum + '/' + newTotalBoxes + '</td>' +
       '<td class="mono" id="rcode-' + i + '">' + d.base + '<span class="check-chars">' + d.checkChars + '</span></td>' +
-      '<td><button class="btn btn-outline" style="padding:5px 10px;font-size:11px;white-space:nowrap" onclick="openPreviewForRow(\'' + code + \')">Preview ↗</button></td>';
+      '<td><button class="btn btn-outline" style="padding:5px 10px;font-size:11px;white-space:nowrap" onclick="openPreviewForRow(\'' + code + '\')">Preview ↗</button></td>';
     tbody.appendChild(tr);
 
     globalBatch++;
@@ -835,18 +834,14 @@ initQtyEditing();
 // Landing page preview
 // ─────────────────────────────────────────────
 function codeToPreviewHash(code) {
-  // Strip full URL prefix if present, keep just the path+check
-  const prefix = 'HTTPS://QR.SWAPPIE.CLOUD/';
+  // Strip URL prefix if present, keep just the path+check
   let c = code.trim().toUpperCase();
-  if (c.startsWith(prefix)) c = c.slice(prefix.length);
+  if (c.startsWith(URL_PREFIX)) c = c.slice(URL_PREFIX.length);
   return c;
 }
 
 function previewUrl(code) {
-  // Use path-based URL to match the real production format (qr.swappie.cloud/CODE)
-  // On GitHub Pages, 404.html catches this and redirects to battery.html#CODE
-  const c = codeToPreviewHash(code);
-  return window.location.origin + '/sp-qr-tool/' + c;
+  return DEMO_BASE + codeToPreviewHash(code);
 }
 
 function openPreview() {

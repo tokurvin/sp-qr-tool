@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Battery Data Registration — Swappie Supplier Portal</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --brand: #6366f1;
+    --green: #16a34a;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-400: #9ca3af;
+    --gray-600: #4b5563;
+    --gray-800: #1f2937;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    background: #f4f6f9;
+    color: var(--gray-800);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  .demo-banner {
+    background: #fef3c7;
+    border-bottom: 2px solid #f59e0b;
+    color: #92400e;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 28px 20px; }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.85em; color: var(--brand); text-decoration: none;
+    font-weight: 500; margin-bottom: 24px;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  header { margin-bottom: 24px; }
+  header h1 { font-size: 1.6em; font-weight: 700; letter-spacing: -0.02em; }
+  .subtitle { color: #6e6e73; font-size: 0.9em; margin-top: 4px; }
+
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .6px; color: #64748b; margin-bottom: 16px;
+  }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.span-2 { grid-column: span 2; }
+
+  label { font-weight: 600; font-size: 12px; color: #475569; }
+  input[type="text"],
+  input[type="number"],
+  input[type="url"],
+  select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color .15s;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+  }
+  input::placeholder { color: #ccc; }
+  .hint { font-size: 11px; color: #94a3b8; }
+
+  .radio-group { display: flex; gap: 16px; }
+  .radio-group label {
+    display: flex; align-items: center; gap: 6px;
+    font-weight: 500; font-size: 13px; color: var(--gray-800); cursor: pointer;
+  }
+  .radio-group input[type="radio"] { width: auto; padding: 0; margin: 0; }
+
+  .uuid-row { display: flex; gap: 10px; align-items: flex-end; }
+  .uuid-row input {
+    flex: 1;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 13px;
+  }
+
+  .btn {
+    padding: 9px 18px; border: none; border-radius: 7px;
+    cursor: pointer; font-size: 13px; font-weight: 600;
+    font-family: inherit; transition: opacity .15s, transform .1s; white-space: nowrap;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { opacity: .9; }
+  .btn-secondary { background: #e2e8f0; color: #334155; }
+  .btn-secondary:hover { background: #cbd5e1; }
+
+  .submit-row {
+    display: flex; justify-content: flex-end; gap: 12px;
+    margin-top: 8px;
+  }
+
+  #success-panel {
+    display: none;
+    background: #fff;
+    border: 2px solid #22c55e;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .success-icon { font-size: 48px; margin-bottom: 12px; }
+  .success-title { font-size: 1.2em; font-weight: 700; color: #166534; margin-bottom: 6px; }
+  .success-label { font-size: 13px; color: var(--gray-600); margin-bottom: 8px; }
+  .success-uuid {
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 15px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 20px;
+    color: #166534;
+    display: inline-block;
+    letter-spacing: .5px;
+    margin-bottom: 8px;
+  }
+  .copy-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer; font-size: 12px; font-weight: 600;
+    color: var(--brand); background: none; border: none;
+    font-family: inherit; padding: 4px 8px; border-radius: 4px;
+    transition: background .15s;
+  }
+  .copy-btn:hover { background: #eef2ff; }
+  .success-note {
+    font-size: 13px; color: var(--gray-600); margin-top: 14px; line-height: 1.6;
+  }
+  .success-note a { color: var(--brand); font-weight: 600; text-decoration: none; }
+  .success-note a:hover { text-decoration: underline; }
+
+  @media (max-width: 560px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.span-2 { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-banner">
+  ⚠️ DEMONSTRATION — This is a prototype portal. No data is actually stored. Submit always returns the same demo UUID.
+</div>
+
+<div class="container">
+  <a href="asn-generator-v4.0.html" class="back-link">← Back to ASN Generator</a>
+
+  <header>
+    <h1>Battery Data Registration</h1>
+    <p class="subtitle">Submit battery specification data per SKU · EU Battery Regulation 2023/1542 · Swappie Supplier Portal</p>
+  </header>
+
+  <div id="success-panel">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Battery data registered successfully</div>
+    <div class="success-label">Your Battery Data UUID for this SKU:</div>
+    <div class="success-uuid" id="uuid-display"></div><br>
+    <button class="copy-btn" onclick="copyUuid()">📋 Copy UUID</button>
+    <div class="success-note">
+      Use this UUID in the <a href="asn-generator-v4.0.html">ASN Generator</a> when creating QR codes for this SKU.<br>
+      Keep it safe — enter it here any time to load and update this record.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📂 Load Existing Record</div>
+    <p style="font-size:13px;color:#64748b;margin-bottom:14px;line-height:1.6">
+      Already have a Battery Data UUID for this SKU? Enter it below to pre-fill the form.
+    </p>
+    <div class="uuid-row">
+      <input type="text" id="load-uuid" placeholder="f47ac10b-58cc-4372-a567-0e02b2c3d479" spellcheck="false" autocomplete="off">
+      <button class="btn btn-secondary" onclick="loadByUuid()">Load record</button>
+    </div>
+    <div id="load-msg" style="font-size:12px;margin-top:8px;display:none"></div>
+  </div>
+
+  <form id="battery-form" onsubmit="submitForm(event)">
+
+    <div class="card">
+      <div class="card-title">🔋 Product Identity</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="f-sku">SKU (APLP code)</label>
+          <input type="text" id="f-sku" placeholder="SMAPLP1003" spellcheck="false" autocomplete="off">
+          <div class="hint">The LP/lot identifier for this battery model</div>
+        </div>
+        <div class="form-group">
+          <label for="f-device-type">Device type</label>
+          <select id="f-device-type">
+            <option value="">Select…</option>
+            <option value="SM">SM — Smartphone</option>
+            <option value="TB">TB — Tablet</option>
+            <option value="LT">LT — Laptop</option>
+          </select>
+        </div>
+        <div class="form-group span-2">
+          <label for="f-product-name">Product / model name</label>
+          <input type="text" id="f-product-name" placeholder="Smartphone Replacement Battery" spellcheck="false">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ Performance &amp; Lifespan</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="f-cap-mah">Capacity (mAh)</label>
+          <input type="number" id="f-cap-mah" placeholder="3500" min="1" step="1" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-cap-wh">Capacity (Wh)</label>
+          <input type="number" id="f-cap-wh" placeholder="13.5" min="0.1" step="0.1" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-volt-nom">Nominal voltage (V)</label>
+          <input type="number" id="f-volt-nom" placeholder="3.87" min="0" step="0.01" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-volt-max">Max charge voltage (V)</label>
+          <input type="number" id="f-volt-max" placeholder="4.45" min="0" step="0.01" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-weight">Weight (g)</label>
+          <input type="number" id="f-weight" placeholder="48" min="1" step="1" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-dimensions">Dimensions (mm, W × H × D)</label>
+          <input type="text" id="f-dimensions" placeholder="70 × 35 × 4.3" spellcheck="false" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-cycles">Rated cycle life (cycles)</label>
+          <input type="number" id="f-cycles" placeholder="500" min="1" step="1" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-retention">Capacity retention</label>
+          <input type="text" id="f-retention" placeholder="≥80% after 500 cycles" spellcheck="false">
+        </div>
+        <div class="form-group span-2">
+          <label for="f-duration">Expected duration</label>
+          <input type="text" id="f-duration" placeholder="Minimum 2 years under normal use" spellcheck="false">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🧪 Chemical Composition</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="f-chemistry">Battery chemistry</label>
+          <select id="f-chemistry">
+            <option value="li-ion">Lithium-ion (Li-ion)</option>
+            <option value="li-po">Lithium Polymer (Li-Po)</option>
+            <option value="nimh">Nickel-Metal Hydride (NiMH)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="f-cathode">Cathode material</label>
+          <input type="text" id="f-cathode" placeholder="Lithium Cobalt Oxide (LiCoO₂)" spellcheck="false">
+        </div>
+        <div class="form-group">
+          <label for="f-anode">Anode material</label>
+          <input type="text" id="f-anode" placeholder="Graphite" spellcheck="false">
+        </div>
+        <div class="form-group">
+          <label for="f-electrolyte">Electrolyte</label>
+          <input type="text" id="f-electrolyte" placeholder="Liquid organic (LiPF₆)" spellcheck="false">
+        </div>
+        <div class="form-group">
+          <label>Contains Cadmium (Cd)?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="hasCd" value="no" checked> No</label>
+            <label><input type="radio" name="hasCd" value="yes"> Yes</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Contains Lead (Pb)?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="hasPb" value="no" checked> No</label>
+            <label><input type="radio" name="hasPb" value="yes"> Yes</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Contains Mercury (Hg)?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="hasHg" value="no" checked> No</label>
+            <label><input type="radio" name="hasHg" value="yes"> Yes</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🌍 Carbon Footprint</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="f-carbon-mfg">Manufacturing footprint (kg CO₂e)</label>
+          <input type="number" id="f-carbon-mfg" placeholder="9.5" min="0" step="0.1" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-carbon-life">Full lifecycle footprint (kg CO₂e)</label>
+          <input type="number" id="f-carbon-life" placeholder="12" min="0" step="0.1" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-carbon-intensity">Carbon intensity (kg CO₂e / Wh)</label>
+          <input type="number" id="f-carbon-intensity" placeholder="0.70" min="0" step="0.01" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-decl-standard">Declaration standard</label>
+          <input type="text" id="f-decl-standard" placeholder="EN 50693 / IEC 62619" spellcheck="false">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">♻️ Recycled Content</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="f-rec-cobalt">Cobalt recycled (%)</label>
+          <input type="number" id="f-rec-cobalt" placeholder="12" min="0" max="100" step="0.1" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-rec-lithium">Lithium recycled (%)</label>
+          <input type="number" id="f-rec-lithium" placeholder="4" min="0" max="100" step="0.1" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="f-rec-nickel">Nickel recycled (%)</label>
+          <input type="number" id="f-rec-nickel" placeholder="4" min="0" max="100" step="0.1" autocomplete="off">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Legal &amp; Compliance</div>
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label for="f-doc-url">EU Declaration of Conformity URL</label>
+          <input type="url" id="f-doc-url" placeholder="https://example.com/doc/battery-DoC.pdf">
+        </div>
+        <div class="form-group">
+          <label for="f-manufacturer">Manufacturer name</label>
+          <input type="text" id="f-manufacturer" placeholder="Sample Battery Co., Ltd." spellcheck="false">
+        </div>
+        <div class="form-group">
+          <label for="f-country-mfg">Country of manufacture</label>
+          <input type="text" id="f-country-mfg" placeholder="China" spellcheck="false">
+        </div>
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear form</button>
+      <button type="submit" class="btn btn-primary">Submit &amp; get UUID →</button>
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+const DEMO_UUID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
+
+const SAMPLE = {
+  sku:            'SMAPLP1003',
+  deviceType:     'SM',
+  productName:    'Smartphone Replacement Battery',
+  capMah:         '3500',
+  capWh:          '13.5',
+  voltNom:        '3.87',
+  voltMax:        '4.45',
+  weight:         '48',
+  dimensions:     '70 × 35 × 4.3',
+  cycles:         '500',
+  retention:      '≥80% after 500 cycles',
+  duration:       'Minimum 2 years under normal use',
+  chemistry:      'li-ion',
+  cathode:        'Lithium Cobalt Oxide (LiCoO₂)',
+  anode:          'Graphite',
+  electrolyte:    'Liquid organic (LiPF₆)',
+  hasCd:          'no',
+  hasPb:          'no',
+  hasHg:          'no',
+  carbonMfg:      '9.5',
+  carbonLife:     '12',
+  carbonIntensity:'0.70',
+  declStandard:   'EN 50693 / IEC 62619',
+  recCobalt:      '12',
+  recLithium:     '4',
+  recNickel:      '4',
+  docUrl:         'https://example.com/doc/SMAPLP1003-DoC.pdf',
+  manufacturer:   'Sample Battery Co., Ltd.',
+  countryMfg:     'China',
+};
+
+function fillForm(d) {
+  document.getElementById('f-sku').value            = d.sku            || '';
+  document.getElementById('f-device-type').value   = d.deviceType     || '';
+  document.getElementById('f-product-name').value  = d.productName    || '';
+  document.getElementById('f-cap-mah').value        = d.capMah         || '';
+  document.getElementById('f-cap-wh').value         = d.capWh          || '';
+  document.getElementById('f-volt-nom').value       = d.voltNom        || '';
+  document.getElementById('f-volt-max').value       = d.voltMax        || '';
+  document.getElementById('f-weight').value         = d.weight         || '';
+  document.getElementById('f-dimensions').value     = d.dimensions     || '';
+  document.getElementById('f-cycles').value         = d.cycles         || '';
+  document.getElementById('f-retention').value      = d.retention      || '';
+  document.getElementById('f-duration').value       = d.duration       || '';
+  document.getElementById('f-chemistry').value      = d.chemistry      || 'li-ion';
+  document.getElementById('f-cathode').value        = d.cathode        || '';
+  document.getElementById('f-anode').value          = d.anode          || '';
+  document.getElementById('f-electrolyte').value    = d.electrolyte    || '';
+  document.getElementById('f-carbon-mfg').value     = d.carbonMfg      || '';
+  document.getElementById('f-carbon-life').value    = d.carbonLife     || '';
+  document.getElementById('f-carbon-intensity').value = d.carbonIntensity || '';
+  document.getElementById('f-decl-standard').value  = d.declStandard   || '';
+  document.getElementById('f-rec-cobalt').value     = d.recCobalt      || '';
+  document.getElementById('f-rec-lithium').value    = d.recLithium     || '';
+  document.getElementById('f-rec-nickel').value     = d.recNickel      || '';
+  document.getElementById('f-doc-url').value        = d.docUrl         || '';
+  document.getElementById('f-manufacturer').value   = d.manufacturer   || '';
+  document.getElementById('f-country-mfg').value    = d.countryMfg     || '';
+  document.querySelector(`input[name="hasCd"][value="${d.hasCd || 'no'}"]`).checked = true;
+  document.querySelector(`input[name="hasPb"][value="${d.hasPb || 'no'}"]`).checked = true;
+  document.querySelector(`input[name="hasHg"][value="${d.hasHg || 'no'}"]`).checked = true;
+}
+
+function clearForm() {
+  document.getElementById('battery-form').reset();
+  document.getElementById('success-panel').style.display = 'none';
+}
+
+function loadByUuid() {
+  const val = document.getElementById('load-uuid').value.trim().toLowerCase();
+  const msg = document.getElementById('load-msg');
+  if (!val) {
+    msg.textContent = 'Please enter a UUID first.';
+    msg.style.color = '#ef4444';
+    msg.style.display = 'block';
+    return;
+  }
+  if (val === DEMO_UUID) {
+    fillForm(SAMPLE);
+    msg.textContent = '✓ Demo record loaded. Edit fields below, then submit to get your UUID again.';
+    msg.style.color = '#166534';
+    msg.style.display = 'block';
+    document.getElementById('battery-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    msg.textContent = 'Record not found. Fill in the form to register a new battery model.';
+    msg.style.color = '#92400e';
+    msg.style.display = 'block';
+  }
+}
+
+function submitForm(e) {
+  e.preventDefault();
+  const panel = document.getElementById('success-panel');
+  document.getElementById('uuid-display').textContent = DEMO_UUID;
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyUuid() {
+  navigator.clipboard.writeText(DEMO_UUID).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1800);
+  }).catch(() => {
+    prompt('Copy this UUID:', DEMO_UUID);
+  });
+}
+</script>
+</body>
+</html>

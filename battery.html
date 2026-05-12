@@ -31,7 +31,6 @@
     padding-bottom: 48px;
   }
 
-  /* ── Demo banner ── */
   .demo-banner {
     background: #fef3c7;
     border-bottom: 2px solid #f59e0b;
@@ -43,7 +42,6 @@
     letter-spacing: .3px;
   }
 
-  /* ── Header ── */
   .site-header {
     background: #fff;
     border-bottom: 1px solid var(--gray-200);
@@ -75,10 +73,8 @@
     letter-spacing: .3px;
   }
 
-  /* ── Layout ── */
   .container { max-width: 680px; margin: 0 auto; padding: 24px 16px; }
 
-  /* ── Error / invalid state ── */
   .error-card {
     background: #fff;
     border: 1px solid var(--gray-200);
@@ -90,7 +86,6 @@
   .error-card h2 { font-size: 1.2em; margin-bottom: 8px; }
   .error-card p { color: var(--gray-600); font-size: 14px; line-height: 1.6; }
 
-  /* ── Code identity card ── */
   .identity-card {
     background: var(--brand);
     color: #fff;
@@ -130,7 +125,6 @@
     font-family: "SF Mono", "Fira Code", monospace;
   }
 
-  /* ── Sections ── */
   .section {
     background: #fff;
     border: 1px solid var(--gray-200);
@@ -156,7 +150,6 @@
   }
   .section-body { padding: 16px 18px; }
 
-  /* ── Data rows ── */
   .data-row {
     display: flex;
     justify-content: space-between;
@@ -171,7 +164,6 @@
   .data-value { font-size: 13px; font-weight: 600; text-align: right; }
   .data-value.mono { font-family: "SF Mono", "Fira Code", monospace; }
 
-  /* ── Compliance pills ── */
   .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
   .pill {
     font-size: 12px;
@@ -186,7 +178,6 @@
   .pill-amber { background: #fef3c7; color: #92400e; }
   .pill-gray  { background: var(--gray-100); color: var(--gray-600); }
 
-  /* ── Recycling symbol ── */
   .recycling-block {
     display: flex;
     align-items: center;
@@ -201,7 +192,6 @@
   .recycling-text { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
   .recycling-text strong { color: var(--gray-800); display: block; margin-bottom: 2px; }
 
-  /* ── Collection points ── */
   .collection-note {
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
@@ -213,7 +203,6 @@
     margin-top: 12px;
   }
 
-  /* ── Footer ── */
   .page-footer {
     margin-top: 24px;
     text-align: center;
@@ -224,11 +213,9 @@
   .page-footer a { color: var(--brand); text-decoration: none; }
   .page-footer a:hover { text-decoration: underline; }
 
-  /* ── Valid / invalid check ── */
   .check-valid { color: var(--green); font-size: 12px; display: flex; align-items: center; gap: 4px; margin-top: 10px; font-weight: 600; }
   .check-invalid { color: var(--red); font-size: 12px; display: flex; align-items: center; gap: 4px; margin-top: 10px; font-weight: 600; }
 
-  /* ── DoC link ── */
   .doc-link {
     display: inline-flex;
     align-items: center;
@@ -265,9 +252,6 @@
 </div>
 
 <script>
-// ─────────────────────────────────────────────
-// Check character validation (v4 · MOD 37)
-// ─────────────────────────────────────────────
 const OUTPUT_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$";
 
 function charValue(c) {
@@ -292,24 +276,17 @@ function validateCheckChars(path, check) {
   return computeHash(path, 31) === check[0] && computeHash(path, 17) === check[1];
 }
 
-// ─────────────────────────────────────────────
-// Parse v4 code
-// Format: {po_country}-{po_number}-{sku}-{shp#}-{boxes}-{box#}-{qty}:{c1}{c2}
-// ─────────────────────────────────────────────
 function parseCode(raw) {
-  // Strip URL prefix if present
-  const prefix = 'HTTPS://QR.SWAPPIE.CLOUD/';
+  const prefix = 'HTTPS://QR.SWAPPIE.COM/';
   let code = raw.toUpperCase().trim();
   if (code.startsWith(prefix)) code = code.slice(prefix.length);
 
-  // Split on colon to get path + check chars
   const colonIdx = code.lastIndexOf(':');
   if (colonIdx < 0) return null;
   const path = code.slice(0, colonIdx);
   const check = code.slice(colonIdx + 1);
   if (check.length !== 2) return null;
 
-  // Parse path fields: PO[A-Z]{2}-\d{8}-SKU-\d{2}-\d{2}-\d{2}-\d{4}
   const regex = /^(PO[A-Z]{2})-(\d{8})-((SM|TB|LT)APLP\d{1,5})-(\d{2})-(\d{2})-(\d{2})-(\d{4})$/;
   const m = path.match(regex);
   if (!m) return null;
@@ -332,9 +309,6 @@ function parseCode(raw) {
   };
 }
 
-// ─────────────────────────────────────────────
-// Dummy battery data (by SKU type)
-// ─────────────────────────────────────────────
 function getBatteryData(skuType) {
   const data = {
     SM: {
@@ -392,12 +366,8 @@ function getBatteryData(skuType) {
   return data[skuType] || data['SM'];
 }
 
-// ─────────────────────────────────────────────
-// Render
-// ─────────────────────────────────────────────
 function render() {
   const app = document.getElementById('app');
-
   const raw = decodeURIComponent(window.location.hash.slice(1));
 
   if (!raw) {
@@ -433,7 +403,6 @@ function render() {
 
   app.innerHTML = `
 
-    <!-- Identity card -->
     <div class="identity-card">
       <div class="label">Battery Information</div>
       <div class="product-name">${d.product}</div>
@@ -458,71 +427,27 @@ function render() {
       ${checkHtml}
     </div>
 
-    <!-- 1. Product & Performance -->
     <div class="section">
-      <div class="section-header">
-        <span class="section-icon">⚡</span>
-        <span class="section-title">Performance &amp; Lifespan</span>
-      </div>
+      <div class="section-header"><span class="section-icon">⚡</span><span class="section-title">Performance &amp; Lifespan</span></div>
       <div class="section-body">
-        <div class="data-row">
-          <span class="data-label">Battery type</span>
-          <span class="data-value">${d.model}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Capacity</span>
-          <span class="data-value">${d.capacity}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Nominal voltage</span>
-          <span class="data-value">${d.voltage}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Weight</span>
-          <span class="data-value">${d.weight}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Dimensions</span>
-          <span class="data-value">${d.dimensions}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Rated cycle life</span>
-          <span class="data-value">${d.cycles}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Expected duration</span>
-          <span class="data-value">${d.duration}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Capacity retention</span>
-          <span class="data-value">${d.retention}</span>
-        </div>
+        <div class="data-row"><span class="data-label">Battery type</span><span class="data-value">${d.model}</span></div>
+        <div class="data-row"><span class="data-label">Capacity</span><span class="data-value">${d.capacity}</span></div>
+        <div class="data-row"><span class="data-label">Nominal voltage</span><span class="data-value">${d.voltage}</span></div>
+        <div class="data-row"><span class="data-label">Weight</span><span class="data-value">${d.weight}</span></div>
+        <div class="data-row"><span class="data-label">Dimensions</span><span class="data-value">${d.dimensions}</span></div>
+        <div class="data-row"><span class="data-label">Rated cycle life</span><span class="data-value">${d.cycles}</span></div>
+        <div class="data-row"><span class="data-label">Expected duration</span><span class="data-value">${d.duration}</span></div>
+        <div class="data-row"><span class="data-label">Capacity retention</span><span class="data-value">${d.retention}</span></div>
       </div>
     </div>
 
-    <!-- 2. Chemical composition -->
     <div class="section">
-      <div class="section-header">
-        <span class="section-icon">🧪</span>
-        <span class="section-title">Chemical Composition</span>
-      </div>
+      <div class="section-header"><span class="section-icon">🧪</span><span class="section-title">Chemical Composition</span></div>
       <div class="section-body">
-        <div class="data-row">
-          <span class="data-label">Battery chemistry</span>
-          <span class="data-value">Lithium-ion (Li-ion)</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Cathode material</span>
-          <span class="data-value">Lithium Cobalt Oxide (LiCoO₂)</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Anode material</span>
-          <span class="data-value">Graphite</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Electrolyte</span>
-          <span class="data-value">Liquid organic (LiPF₆)</span>
-        </div>
+        <div class="data-row"><span class="data-label">Battery chemistry</span><span class="data-value">Lithium-ion (Li-ion)</span></div>
+        <div class="data-row"><span class="data-label">Cathode material</span><span class="data-value">Lithium Cobalt Oxide (LiCoO₂)</span></div>
+        <div class="data-row"><span class="data-label">Anode material</span><span class="data-value">Graphite</span></div>
+        <div class="data-row"><span class="data-label">Electrolyte</span><span class="data-value">Liquid organic (LiPF₆)</span></div>
         <div class="data-row">
           <span class="data-label">Hazardous substances</span>
           <span class="data-value" style="text-align:right">
@@ -536,143 +461,63 @@ function render() {
       </div>
     </div>
 
-    <!-- 3. Carbon footprint -->
     <div class="section">
-      <div class="section-header">
-        <span class="section-icon">🌍</span>
-        <span class="section-title">Carbon Footprint</span>
-      </div>
+      <div class="section-header"><span class="section-icon">🌍</span><span class="section-title">Carbon Footprint</span></div>
       <div class="section-body">
-        <div class="data-row">
-          <span class="data-label">Manufacturing footprint</span>
-          <span class="data-value">${d.carbonMfg}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Full lifecycle footprint</span>
-          <span class="data-value">${d.carbonLife}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Carbon intensity</span>
-          <span class="data-value">${d.carbonIntensity}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Declaration standard</span>
-          <span class="data-value">EN 50693 / IEC 62619</span>
-        </div>
+        <div class="data-row"><span class="data-label">Manufacturing footprint</span><span class="data-value">${d.carbonMfg}</span></div>
+        <div class="data-row"><span class="data-label">Full lifecycle footprint</span><span class="data-value">${d.carbonLife}</span></div>
+        <div class="data-row"><span class="data-label">Carbon intensity</span><span class="data-value">${d.carbonIntensity}</span></div>
+        <div class="data-row"><span class="data-label">Declaration standard</span><span class="data-value">EN 50693 / IEC 62619</span></div>
       </div>
     </div>
 
-    <!-- 4. Recycled content -->
     <div class="section">
-      <div class="section-header">
-        <span class="section-icon">♻️</span>
-        <span class="section-title">Recycled Content</span>
-      </div>
+      <div class="section-header"><span class="section-icon">♻️</span><span class="section-title">Recycled Content</span></div>
       <div class="section-body">
-        <div class="data-row">
-          <span class="data-label">Cobalt (recycled)</span>
-          <span class="data-value">${d.recycledCobalt}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Lithium (recycled)</span>
-          <span class="data-value">${d.recycledLithium}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Nickel (recycled)</span>
-          <span class="data-value">${d.recycledNickel}</span>
-        </div>
+        <div class="data-row"><span class="data-label">Cobalt (recycled)</span><span class="data-value">${d.recycledCobalt}</span></div>
+        <div class="data-row"><span class="data-label">Lithium (recycled)</span><span class="data-value">${d.recycledLithium}</span></div>
+        <div class="data-row"><span class="data-label">Nickel (recycled)</span><span class="data-value">${d.recycledNickel}</span></div>
       </div>
     </div>
 
-    <!-- 5. Collection & recycling -->
     <div class="section">
-      <div class="section-header">
-        <span class="section-icon">🗑️</span>
-        <span class="section-title">End-of-Life &amp; Recycling</span>
-      </div>
+      <div class="section-header"><span class="section-icon">🗑️</span><span class="section-title">End-of-Life &amp; Recycling</span></div>
       <div class="section-body">
         <div class="recycling-block">
           <div class="recycling-symbol">🔋</div>
           <div class="recycling-text">
             <strong>Do not dispose of in household waste</strong>
-            This battery must be collected separately and recycled in accordance with EU Directive 2023/1542. The crossed-out wheelie bin symbol indicates separate collection is required.
+            This battery must be collected separately and recycled in accordance with EU Directive 2023/1542.
           </div>
         </div>
         <div class="collection-note">
           ♻ Take this battery to a certified collection point, retailer take-back scheme, or authorised recycling facility. Do not incinerate or puncture.
         </div>
-        <div class="data-row" style="margin-top:12px">
-          <span class="data-label">Recycling instructions</span>
-          <span class="data-value">Discharge before disposal · Remove from device · No incineration</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Waste management</span>
-          <span class="data-value">WEEE directive compliant · Separate collection</span>
-        </div>
+        <div class="data-row" style="margin-top:12px"><span class="data-label">Recycling instructions</span><span class="data-value">Discharge before disposal · Remove from device · No incineration</span></div>
+        <div class="data-row"><span class="data-label">Waste management</span><span class="data-value">WEEE directive compliant · Separate collection</span></div>
       </div>
     </div>
 
-    <!-- 6. Traceability -->
     <div class="section">
-      <div class="section-header">
-        <span class="section-icon">📦</span>
-        <span class="section-title">Traceability</span>
-      </div>
+      <div class="section-header"><span class="section-icon">📦</span><span class="section-title">Traceability</span></div>
       <div class="section-body">
-        <div class="data-row">
-          <span class="data-label">Lot / batch identifier</span>
-          <span class="data-value mono">${parsed.sku}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Purchase order</span>
-          <span class="data-value mono">${parsed.poCountry}-${parsed.poNumber}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Shipment</span>
-          <span class="data-value">No. ${parsed.shipment} · Box ${parsed.boxNumber} of ${parsed.totalBoxes}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Country of import</span>
-          <span class="data-value">${countryName}</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Country of manufacture</span>
-          <span class="data-value">China</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Responsible importer</span>
-          <span class="data-value">[Importer], Finland</span>
-        </div>
+        <div class="data-row"><span class="data-label">Lot / batch identifier</span><span class="data-value mono">${parsed.sku}</span></div>
+        <div class="data-row"><span class="data-label">Purchase order</span><span class="data-value mono">${parsed.poCountry}-${parsed.poNumber}</span></div>
+        <div class="data-row"><span class="data-label">Shipment</span><span class="data-value">No. ${parsed.shipment} · Box ${parsed.boxNumber} of ${parsed.totalBoxes}</span></div>
+        <div class="data-row"><span class="data-label">Country of import</span><span class="data-value">${countryName}</span></div>
+        <div class="data-row"><span class="data-label">Country of manufacture</span><span class="data-value">China</span></div>
+        <div class="data-row"><span class="data-label">Responsible importer</span><span class="data-value">[Importer], Finland</span></div>
       </div>
     </div>
 
-    <!-- 7. Legal & compliance -->
     <div class="section">
-      <div class="section-header">
-        <span class="section-icon">📋</span>
-        <span class="section-title">Legal &amp; Compliance</span>
-      </div>
+      <div class="section-header"><span class="section-icon">📋</span><span class="section-title">Legal &amp; Compliance</span></div>
       <div class="section-body">
-        <div class="data-row">
-          <span class="data-label">Regulation</span>
-          <span class="data-value">EU 2023/1542 (Battery Regulation)</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Battery category</span>
-          <span class="data-value">Portable battery (&lt;5 kg)</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Economic operator</span>
-          <span class="data-value">[Importer] (importer)</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">EU Declaration of Conformity</span>
-          <span class="data-value"><a href="#" class="doc-link" onclick="return false">View document ↗</a></span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Standards applied</span>
-          <span class="data-value">IEC 62133-2 · UN 38.3 · EN 50693</span>
-        </div>
+        <div class="data-row"><span class="data-label">Regulation</span><span class="data-value">EU 2023/1542 (Battery Regulation)</span></div>
+        <div class="data-row"><span class="data-label">Battery category</span><span class="data-value">Portable battery (&lt;5 kg)</span></div>
+        <div class="data-row"><span class="data-label">Economic operator</span><span class="data-value">[Importer] (importer)</span></div>
+        <div class="data-row"><span class="data-label">EU Declaration of Conformity</span><span class="data-value"><a href="#" class="doc-link" onclick="return false">View document ↗</a></span></div>
+        <div class="data-row"><span class="data-label">Standards applied</span><span class="data-value">IEC 62133-2 · UN 38.3 · EN 50693</span></div>
       </div>
     </div>
 
@@ -685,8 +530,6 @@ function render() {
 }
 
 render();
-
-// Re-render if hash changes
 window.addEventListener('hashchange', render);
 </script>
 

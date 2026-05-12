@@ -158,6 +158,30 @@
   .success-note a { color: var(--brand); font-weight: 600; text-decoration: none; }
   .success-note a:hover { text-decoration: underline; }
 
+  .version-badge {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 14px;
+    border-radius: 20px;
+    letter-spacing: .3px;
+    margin-bottom: 10px;
+  }
+
+  .update-mode-notice {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #92400e;
+    margin-top: 10px;
+    line-height: 1.6;
+    display: none;
+  }
+
   @media (max-width: 560px) {
     .form-grid { grid-template-columns: 1fr; }
     .form-group.span-2 { grid-column: span 1; }
@@ -182,27 +206,29 @@
   <div id="success-panel">
     <div class="success-icon">✅</div>
     <div class="success-title">Battery data registered successfully</div>
-    <div class="success-label">Your Battery Data UUID for this SKU:</div>
+    <div class="version-badge" id="success-version-badge">Version 1</div>
+    <div class="success-label">New UUID for <strong id="success-supplier-sku"></strong>:</div>
     <div class="success-uuid" id="uuid-display"></div><br>
     <button class="copy-btn" onclick="copyUuid()">📋 Copy UUID</button>
     <div class="success-note">
-      This UUID uniquely identifies your battery data for <strong id="success-supplier-sku"></strong>.<br>
-      Use it in the <a href="asn-generator-v4.0.html">ASN Generator</a> when creating QR codes for this SKU.<br>
-      Keep it safe — enter it here any time to load and update this record.
+      This is a <strong>new UUID</strong> — use it in the <a href="asn-generator-v4.0.html">ASN Generator</a> for all new shipments of this SKU.<br>
+      Previous UUIDs remain valid; QR codes already printed continue to resolve correctly.<br>
+      Load this UUID here any time to use it as a starting point for a future update.
     </div>
   </div>
 
-  <!-- Load existing record -->
+  <!-- Load as template -->
   <div class="card">
-    <div class="card-title">📂 Load Existing Record</div>
+    <div class="card-title">📂 Start from Previous Version</div>
     <p style="font-size:13px;color:#64748b;margin-bottom:14px;line-height:1.6">
-      Already have a Battery Data UUID for this SKU? Enter it below to pre-fill the form — useful when creating a new version based on an existing record.
+      Updating an existing battery model? Enter a previous UUID to pre-fill the form as a starting point. Submitting will always create a <strong>new record with a new UUID</strong> — the previous version stays intact and its QR codes continue to work.
     </p>
     <div class="uuid-row">
       <input type="text" id="load-uuid" placeholder="f47ac10b-58cc-4372-a567-0e02b2c3d479" spellcheck="false" autocomplete="off">
-      <button class="btn btn-secondary" onclick="loadByUuid()">Load record</button>
+      <button class="btn btn-secondary" onclick="loadByUuid()">Load as template</button>
     </div>
     <div id="load-msg" style="font-size:12px;margin-top:8px;display:none"></div>
+    <div class="update-mode-notice" id="update-mode-notice"></div>
   </div>
 
   <!-- Form -->
@@ -390,9 +416,21 @@
       </div>
     </div>
 
+    <!-- Version Notes -->
+    <div class="card">
+      <div class="card-title">📝 Version Notes</div>
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label for="f-version-note">What changed in this version?</label>
+          <input type="text" id="f-version-note" placeholder="e.g. Changed cathode from LiCoO₂ to NMC; new production facility from March 2026" spellcheck="false">
+          <div class="hint">Leave blank for initial registration. When creating a new version from a previous record, describe what changed — stored for audit purposes alongside the new UUID.</div>
+        </div>
+      </div>
+    </div>
+
     <div class="submit-row">
       <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear form</button>
-      <button type="submit" class="btn btn-primary">Submit &amp; get UUID →</button>
+      <button type="submit" class="btn btn-primary" id="submit-btn">Submit &amp; get UUID →</button>
     </div>
 
   </form>
@@ -401,6 +439,10 @@
 
 <script>
 const DEMO_UUID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
+
+// Version state — resets on clear/page load
+let _loadedVersion = 0;   // 0 = no record loaded; N = version N was loaded
+let _isUpdateMode  = false;
 
 const SAMPLE = {
   supplierId:     'SW-SUP-0042',
@@ -433,6 +475,7 @@ const SAMPLE = {
   docUrl:         'https://example.com/doc/SMAPLP1003-DoC.pdf',
   manufacturer:   'Sample Battery Co., Ltd.',
   countryMfg:     'China',
+  versionNote:    '',
 };
 
 function fillForm(d) {
@@ -463,6 +506,7 @@ function fillForm(d) {
   document.getElementById('f-doc-url').value        = d.docUrl         || '';
   document.getElementById('f-manufacturer').value   = d.manufacturer   || '';
   document.getElementById('f-country-mfg').value    = d.countryMfg     || '';
+  document.getElementById('f-version-note').value   = '';  // always blank — supplier describes what changed
   document.querySelector(`input[name="hasCd"][value="${d.hasCd || 'no'}"]`).checked = true;
   document.querySelector(`input[name="hasPb"][value="${d.hasPb || 'no'}"]`).checked = true;
   document.querySelector(`input[name="hasHg"][value="${d.hasHg || 'no'}"]`).checked = true;
@@ -472,6 +516,12 @@ function clearForm() {
   document.getElementById('battery-form').reset();
   document.getElementById('success-panel').style.display = 'none';
   document.getElementById('success-supplier-sku').textContent = '';
+  document.getElementById('update-mode-notice').style.display = 'none';
+  document.getElementById('load-msg').style.display = 'none';
+  document.getElementById('load-uuid').value = '';
+  document.getElementById('submit-btn').textContent = 'Submit & get UUID →';
+  _loadedVersion = 0;
+  _isUpdateMode  = false;
 }
 
 function loadByUuid() {
@@ -485,9 +535,15 @@ function loadByUuid() {
   }
   if (val === DEMO_UUID) {
     fillForm(SAMPLE);
-    msg.textContent = '✓ Demo record loaded. Edit fields below, then submit to get your UUID again.';
+    _loadedVersion = 1;
+    _isUpdateMode  = true;
+    msg.textContent = '✓ Version 1 loaded (SW-SUP-0042 × SMAPLP1003).';
     msg.style.color = '#166534';
     msg.style.display = 'block';
+    const notice = document.getElementById('update-mode-notice');
+    notice.innerHTML = '⚠️ <strong>Based on Version 1.</strong> The form is pre-filled from the previous record. Make your changes, describe them in the Version Notes field, and submit — you will receive a <strong>new UUID</strong> for this version. The old UUID and its QR codes remain valid.';
+    notice.style.display = 'block';
+    document.getElementById('submit-btn').textContent = 'Submit as Version 2 →';
     document.getElementById('battery-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } else {
     msg.textContent = 'Record not found. Fill in the form to register a new battery model.';
@@ -498,11 +554,19 @@ function loadByUuid() {
 
 function submitForm(e) {
   e.preventDefault();
-  const supplierId = document.getElementById('f-supplier-id').value.trim() || '(no supplier ID)';
-  const sku        = document.getElementById('f-sku').value.trim().toUpperCase() || '(no SKU)';
+  const supplierId  = document.getElementById('f-supplier-id').value.trim() || '(no supplier ID)';
+  const sku         = document.getElementById('f-sku').value.trim().toUpperCase() || '(no SKU)';
+  const newVersion  = _isUpdateMode ? _loadedVersion + 1 : 1;
+
   const panel = document.getElementById('success-panel');
   document.getElementById('uuid-display').textContent = DEMO_UUID;
   document.getElementById('success-supplier-sku').textContent = `${supplierId} × ${sku}`;
+  document.getElementById('success-version-badge').textContent = `Version ${newVersion}`;
+
+  _loadedVersion = newVersion;
+  _isUpdateMode  = true;
+  document.getElementById('submit-btn').textContent = `Submit as Version ${newVersion + 1} →`;
+
   panel.style.display = 'block';
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

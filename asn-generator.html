@@ -52,6 +52,19 @@
     margin-bottom: 16px;
   }
 
+  .deprecation-banner {
+    background: #fef3c7;
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: #92400e;
+    line-height: 1.6;
+  }
+  .deprecation-banner strong { color: #78350f; }
+  .deprecation-banner a { color: #92400e; font-weight: 700; }
+
   /* ── Global inputs ── */
   .global-row {
     display: grid;
@@ -265,6 +278,11 @@
 
   <a href="index.html" class="back-link">← Back to tools</a>
 
+  <div class="deprecation-banner">
+    <strong>⚠ Deprecated · v3 spec</strong><br>
+    As of 2026-05-12 the v4.0 format is the unified standard for both SP traceability and EU Battery Regulation. Use the <a href="asn-generator-v4.0.html">v4.0 ASN generator</a> for new POs. This page is kept only for replaying historical v3 shipments.
+  </div>
+
   <header>
     <h1>SP ASN Code Generator</h1>
     <p class="subtitle">Spare parts ASN label · Version 3 spec · Check digit: A–Z + $ % * · <span id="app-version">v3.1</span></p>
@@ -354,10 +372,7 @@
 </div><!-- /container -->
 
 <script>
-// ─────────────────────────────────────────────
-// Check digit algorithm (v3 · MOD 29)
-// ─────────────────────────────────────────────
-const OUTPUT_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ$%*"; // 29 chars (prime)
+const OUTPUT_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ$%*";
 
 function charValue(c) {
   const code = c.charCodeAt(0);
@@ -371,7 +386,7 @@ function computeCheckLetter(str) {
   let acc = 0;
   for (const c of str) {
     const v = charValue(c);
-    if (v < 0) return '?'; // unexpected char
+    if (v < 0) return '?';
     acc = (acc * 31 + v) % 29;
   }
   return OUTPUT_ALPHABET[acc];
@@ -387,9 +402,6 @@ function buildCode(qty, sku, po, shipNum, totalBoxes, boxNum) {
   return base + check;
 }
 
-// ─────────────────────────────────────────────
-// SKU row management
-// ─────────────────────────────────────────────
 let rowCount = 0;
 
 function addSkuRow(sku = '', totalQty = '', batchQty = '') {
@@ -411,20 +423,15 @@ function addSkuRow(sku = '', totalQty = '', batchQty = '') {
 function removeRow(idx) {
   const el = document.getElementById(`sku-row-${idx}`);
   if (el) el.remove();
-  // Renumber display
   document.querySelectorAll('#sku-tbody tr').forEach((tr, i) => {
     tr.cells[0].textContent = i + 1;
   });
 }
 
-// Seed with 2 empty rows on load
 addSkuRow();
 addSkuRow();
 
-// ─────────────────────────────────────────────
-// Generation
-// ─────────────────────────────────────────────
-let generatedRows = []; // for download
+let generatedRows = [];
 
 function showError(msg) {
   const el = document.getElementById('error-msg');
@@ -435,7 +442,6 @@ function showError(msg) {
 function generate() {
   showError('');
 
-  // Validate global fields
   const po = document.getElementById('po-number').value.trim().toUpperCase();
   const shipNum = parseInt(document.getElementById('shipment-num').value, 10);
 
@@ -452,7 +458,6 @@ function generate() {
     return;
   }
 
-  // Collect SKU rows
   const skuRows = [];
   const trs = document.querySelectorAll('#sku-tbody tr');
   for (let i = 0; i < trs.length; i++) {
@@ -466,7 +471,7 @@ function generate() {
     const tqty  = parseInt(tqtyInput.value, 10);
     const bqty  = parseInt(bqtyInput.value, 10);
 
-    if (!sku) continue; // skip blank rows
+    if (!sku) continue;
 
     if (!/^(SM|TB|LT)APLP\d{1,5}$/.test(sku)) {
       showError(`Row ${i+1}: SKU "${sku}" is invalid. Must be SM/TB/LT + APLP + 1–5 digits (e.g. SMAPLP1829).`);
@@ -475,28 +480,15 @@ function generate() {
     }
     skuInput.classList.remove('invalid');
 
-    if (isNaN(tqty) || tqty < 1) {
-      showError(`Row ${i+1}: Total Qty must be a positive number.`);
-      return;
-    }
-    if (isNaN(bqty) || bqty < 1) {
-      showError(`Row ${i+1}: Batch Qty must be a positive number.`);
-      return;
-    }
-    if (bqty > tqty) {
-      showError(`Row ${i+1}: Batch Qty per box (${bqty}) cannot exceed Total Qty (${tqty}).`);
-      return;
-    }
+    if (isNaN(tqty) || tqty < 1) { showError(`Row ${i+1}: Total Qty must be a positive number.`); return; }
+    if (isNaN(bqty) || bqty < 1) { showError(`Row ${i+1}: Batch Qty must be a positive number.`); return; }
+    if (bqty > tqty) { showError(`Row ${i+1}: Batch Qty per box (${bqty}) cannot exceed Total Qty (${tqty}).`); return; }
 
     skuRows.push({ sku, tqty, bqty });
   }
 
-  if (skuRows.length === 0) {
-    showError('Please add at least one SKU.');
-    return;
-  }
+  if (skuRows.length === 0) { showError('Please add at least one SKU.'); return; }
 
-  // Build result rows
   generatedRows = [];
   const tbody = document.getElementById('result-tbody');
   tbody.innerHTML = '';
@@ -508,7 +500,6 @@ function generate() {
   skuRows.forEach(({ sku, tqty, bqty }, skuIdx) => {
     const totalBoxes = Math.ceil(tqty / bqty);
 
-    // Separator row with total tracker
     const sepTr = document.createElement('tr');
     sepTr.className = 'sep-row';
     sepTr.innerHTML = `<td colspan="8">SKU ${sku} · <span id="sku-total-${skuIdx}">${tqty}</span> / ${tqty} units in ${totalBoxes} box${totalBoxes !== 1 ? 'es' : ''} <span class="qty-total-note" id="sku-note-${skuIdx}"></span></td>`;
@@ -527,7 +518,6 @@ function generate() {
 
       const rowIdx = generatedRows.length;
 
-      // Table row with editable qty
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${globalBatch}</td>
@@ -541,7 +531,6 @@ function generate() {
       `;
       tbody.appendChild(tr);
 
-      // For download
       generatedRows.push({
         'Batch/Box': globalBatch,
         'Batch Qty': qty,
@@ -562,9 +551,6 @@ function generate() {
     totalBoxesAll += totalBoxes;
   });
 
-  // Event delegation is set up once via initQtyEditing()
-
-  // Stats
   const statsBar = document.getElementById('stats-bar');
   statsBar.innerHTML = `
     <div class="stat"><div class="stat-value">${skuRows.length}</div><div class="stat-label">SKUs</div></div>
@@ -577,14 +563,6 @@ function generate() {
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function totalQty(tqty, bqty, totalBoxes) {
-  return tqty; // just return the declared total
-}
-
-// ─────────────────────────────────────────────
-// Live edit of batch qty in results
-// (uses event delegation on result-tbody for reliability)
-// ─────────────────────────────────────────────
 let qtyEditingInitialized = false;
 
 function initQtyEditing() {
@@ -593,61 +571,21 @@ function initQtyEditing() {
 
   var tbody = document.getElementById('result-tbody');
 
-  // Recalculate on blur (click away / tab out)
   tbody.addEventListener('focusout', function(e) {
     if (e.target.classList.contains('editable-qty')) onQtyEdit(e);
   });
-
-  // Recalculate on Enter key
   tbody.addEventListener('keydown', function(e) {
-    if (e.target.classList.contains('editable-qty') && e.key === 'Enter') {
-      e.preventDefault();
-      e.target.blur();
-    }
+    if (e.target.classList.contains('editable-qty') && e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
   });
-
-  // Recalculate on spinner arrow clicks (detected via change event
-  // only when not currently focused from keyboard typing)
   tbody.addEventListener('change', function(e) {
-    if (e.target.classList.contains('editable-qty') && !e.target._typing) {
-      onQtyEdit(e);
-    }
+    if (e.target.classList.contains('editable-qty') && !e.target._typing) onQtyEdit(e);
   });
-
-  // Track whether user is typing vs using spinner
   tbody.addEventListener('keypress', function(e) {
-    if (e.target.classList.contains('editable-qty')) {
-      e.target._typing = true;
-    }
+    if (e.target.classList.contains('editable-qty')) e.target._typing = true;
   });
   tbody.addEventListener('focusin', function(e) {
-    if (e.target.classList.contains('editable-qty')) {
-      e.target._typing = false;
-    }
+    if (e.target.classList.contains('editable-qty')) e.target._typing = false;
   });
-}
-
-function updateRowDisplay(rowIdx) {
-  var row = generatedRows[rowIdx];
-  if (!row) return;
-  var code = buildCode(row['Batch Qty'], row._sku, row._po, row._shipNum, row._totalBoxes, row._box);
-  row['QR Code String (v3)'] = code;
-  row['Package Sticker'] = code;
-  row['Spare Part Sticker'] = code;
-
-  // Update qty input
-  var qtyInput = document.getElementById('rqty-' + rowIdx);
-  if (qtyInput && qtyInput !== document.activeElement) {
-    qtyInput.value = row['Batch Qty'];
-  }
-
-  // Update QR code cell
-  var codeEl = document.getElementById('rcode-' + rowIdx);
-  if (codeEl) {
-    var checkLetter = code.slice(-1);
-    var baseCode = code.slice(0, -1);
-    codeEl.innerHTML = baseCode + '<span class="check-letter">' + checkLetter + '</span>';
-  }
 }
 
 function rebuildResultTable() {
@@ -660,7 +598,6 @@ function rebuildResultTable() {
   var totalUnits = 0;
   var skuCount = 0;
 
-  // Count boxes per SKU for headers and box# display
   var skuBoxCounts = {};
   for (var i = 0; i < generatedRows.length; i++) {
     var si = generatedRows[i]._skuIdx;
@@ -672,7 +609,6 @@ function rebuildResultTable() {
     var si = row._skuIdx;
     var newTotalBoxes = skuBoxCounts[si];
 
-    // SKU separator row
     if (si !== currentSkuIdx) {
       currentSkuIdx = si;
       skuCount++;
@@ -693,20 +629,17 @@ function rebuildResultTable() {
       totalBoxesAll += newTotalBoxes;
     }
 
-    // Find this row's position within its SKU (1-based box#)
     var boxNum = 0;
     for (var j = 0; j <= i; j++) {
       if (generatedRows[j]._skuIdx === si) boxNum++;
     }
 
-    // Update row metadata
     row._totalBoxes = newTotalBoxes;
     row._box = boxNum;
     row['Total Boxes'] = newTotalBoxes;
     row['Box #'] = boxNum;
     row['Batch/Box'] = globalBatch;
 
-    // Rebuild QR code with updated box#/totalBoxes
     var code = buildCode(row['Batch Qty'], row._sku, row._po, row._shipNum, newTotalBoxes, boxNum);
     row['QR Code String (v3)'] = code;
     row['Package Sticker'] = code;
@@ -731,7 +664,6 @@ function rebuildResultTable() {
     totalUnits += row['Batch Qty'];
   }
 
-  // Update stats bar
   var statValues = document.querySelectorAll('.stat-value');
   if (statValues.length >= 1) statValues[0].textContent = skuCount;
   if (statValues.length >= 2) statValues[1].textContent = totalBoxesAll;
@@ -748,31 +680,24 @@ function onQtyEdit(e) {
   if (isNaN(newQty) || isNaN(rowIdx)) return;
   if (newQty < 1) newQty = 1;
   var clampedQty = Math.min(newQty, 9999);
-  input.value = clampedQty; // normalize displayed value on commit
+  input.value = clampedQty;
 
   var row = generatedRows[rowIdx];
   if (!row) return;
   row['Batch Qty'] = clampedQty;
 
-  // Find all rows for this SKU
   var skuRowIndices = [];
   for (var i = 0; i < generatedRows.length; i++) {
-    if (generatedRows[i]._skuIdx === skuIdx) {
-      skuRowIndices.push(i);
-    }
+    if (generatedRows[i]._skuIdx === skuIdx) skuRowIndices.push(i);
   }
 
-  // Redistribute: all boxes AFTER the edited one get recalculated
   var editedPos = skuRowIndices.indexOf(rowIdx);
   if (editedPos >= 0) {
     var sumBefore = 0;
-    for (var j = 0; j <= editedPos; j++) {
-      sumBefore += generatedRows[skuRowIndices[j]]['Batch Qty'];
-    }
+    for (var j = 0; j <= editedPos; j++) sumBefore += generatedRows[skuRowIndices[j]]['Batch Qty'];
     var remaining = Math.max(0, skuTqty - sumBefore);
     var origBatch = row._origBatchQty;
 
-    // Update existing subsequent boxes
     for (var j = editedPos + 1; j < skuRowIndices.length; j++) {
       var ri = skuRowIndices[j];
       var boxQty = Math.min(remaining, origBatch);
@@ -780,49 +705,32 @@ function onQtyEdit(e) {
       remaining -= boxQty;
     }
 
-    // Add new boxes if remaining qty overflows past existing boxes
-    // (insert right after the last row of this SKU in generatedRows)
     if (remaining > 0) {
       var insertAfter = skuRowIndices[skuRowIndices.length - 1] + 1;
       var newRows = [];
       while (remaining > 0) {
         var boxQty = Math.min(remaining, origBatch);
         newRows.push({
-          'Batch/Box': 0, // will be renumbered by rebuildResultTable
-          'Batch Qty': boxQty,
-          'SKU': row._sku,
-          'PO Number': row._po,
+          'Batch/Box': 0, 'Batch Qty': boxQty, 'SKU': row._sku, 'PO Number': row._po,
           'Shipment #': String(row._shipNum).padStart(2, '0'),
-          'Total Boxes': 0,
-          'Box #': 0,
-          'QR Code String (v3)': '',
-          'Package Sticker': '',
-          'Spare Part Sticker': '',
+          'Total Boxes': 0, 'Box #': 0,
+          'QR Code String (v3)': '', 'Package Sticker': '', 'Spare Part Sticker': '',
           _sku: row._sku, _po: row._po, _shipNum: row._shipNum,
           _totalBoxes: 0, _box: 0, _skuIdx: skuIdx,
-          _skuTqty: skuTqty, _skuRowStart: row._skuRowStart,
-          _origBatchQty: origBatch
+          _skuTqty: skuTqty, _skuRowStart: row._skuRowStart, _origBatchQty: origBatch
         });
         remaining -= boxQty;
       }
-      // Splice new rows into the correct position
       generatedRows.splice.apply(generatedRows, [insertAfter, 0].concat(newRows));
     }
   }
 
-  // Remove rows with 0 qty
   generatedRows = generatedRows.filter(function(r) { return r['Batch Qty'] > 0; });
-
-  // Rebuild the entire results table with correct box#, total boxes, QR codes
   rebuildResultTable();
 }
 
-// Initialize event delegation immediately
 initQtyEditing();
 
-// ─────────────────────────────────────────────
-// Downloads
-// ─────────────────────────────────────────────
 function getFilenameBase() {
   const po = document.getElementById('po-number').value.trim().toUpperCase() || 'ASN';
   return `ASN ${po}`;
@@ -830,68 +738,44 @@ function getFilenameBase() {
 
 function downloadExcel() {
   if (!generatedRows.length) return;
-
-  // Build rows for Excel with empty separator rows between SKUs
   const excelRows = [];
   const headers = Object.keys(generatedRows[0]).filter(h => h[0] !== '_');
   excelRows.push(headers);
 
   let lastSku = null;
   generatedRows.forEach(row => {
-    if (lastSku !== null && row['SKU'] !== lastSku) {
-      excelRows.push(new Array(headers.length).fill('')); // blank separator
-    }
+    if (lastSku !== null && row['SKU'] !== lastSku) excelRows.push(new Array(headers.length).fill(''));
     excelRows.push(headers.map(h => row[h]));
     lastSku = row['SKU'];
   });
 
-  // Totals row
   excelRows.push(new Array(headers.length).fill(''));
   const totals = new Array(headers.length).fill('');
-  totals[0] = generatedRows.length; // total boxes
+  totals[0] = generatedRows.length;
   totals[1] = generatedRows.reduce((s, r) => s + r['Batch Qty'], 0);
   excelRows.push(totals);
 
   const ws = XLSX.utils.aoa_to_sheet(excelRows);
-
-  // Column widths
-  ws['!cols'] = [
-    {wch:10},{wch:12},{wch:14},{wch:16},{wch:10},{wch:12},{wch:8},{wch:44},{wch:44},{wch:44}
-  ];
+  ws['!cols'] = [{wch:10},{wch:12},{wch:14},{wch:16},{wch:10},{wch:12},{wch:8},{wch:44},{wch:44},{wch:44}];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'ASN');
 
-  // Use Blob + download link instead of XLSX.writeFile for better mobile/in-app browser compatibility
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
   const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   triggerDownload(blob, `${getFilenameBase()}.xlsx`);
 }
 
 function triggerDownload(blob, filename) {
-  // IE / old Edge
-  if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-    window.navigator.msSaveOrOpenBlob(blob, filename);
-    return;
-  }
+  if (window.navigator && window.navigator.msSaveOrOpenBlob) { window.navigator.msSaveOrOpenBlob(blob, filename); return; }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.rel = 'noopener';
+  a.href = url; a.download = filename; a.rel = 'noopener';
   document.body.appendChild(a);
   a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
 }
 
-// ─────────────────────────────────────────────
-// Page reset — ensure clean state on every load
-// (prevents browser auto-fill from leaking data
-//  between vendors sharing the same URL)
-// ─────────────────────────────────────────────
 window.addEventListener('pageshow', function() {
   document.getElementById('po-number').value = '';
   document.getElementById('shipment-num').value = '1';
@@ -899,10 +783,8 @@ window.addEventListener('pageshow', function() {
   generatedRows = [];
   document.getElementById('result-tbody').innerHTML = '';
   document.getElementById('stats-bar').innerHTML = '';
-  // Reset SKU inputs
   document.querySelectorAll('#sku-tbody input').forEach(function(input) {
-    input.value = '';
-    input.classList.remove('invalid');
+    input.value = ''; input.classList.remove('invalid');
   });
   showError('');
 });
@@ -917,8 +799,7 @@ function downloadCSV() {
     lines.push(headers.map(h => `"${row[h]}"`).join(','));
     lastSku = row['SKU'];
   });
-  // BOM for proper UTF-8 handling in Excel; same robust download path as XLSX
-  const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   triggerDownload(blob, `${getFilenameBase()}.csv`);
 }
 </script>

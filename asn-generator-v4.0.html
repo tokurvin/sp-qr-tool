@@ -592,8 +592,10 @@ function generate() {
         'SKU': sku,
         'PO Number': po,
         'Shipment #': String(shipNum).padStart(2, '0'),
-        'Total Boxes': totalBoxes,
-        'Box #': box,
+        'Total Boxes': String(totalBoxes).padStart(2, '0'),
+        'Box #': String(box).padStart(2, '0'),
+        'Battery Data UUID': uuid,
+        'Landing Page URL': uuid ? `https://qr.swappie.com/${uuid}` : '',
         'QR Code String (v4)': code,
         'Package Sticker': code,
         'Spare Part Sticker': code,
@@ -731,14 +733,16 @@ function rebuildResultTable() {
 
     row._totalBoxes = newTotalBoxes;
     row._box = boxNum;
-    row['Total Boxes'] = newTotalBoxes;
-    row['Box #'] = boxNum;
+    row['Total Boxes'] = String(newTotalBoxes).padStart(2, '0');
+    row['Box #'] = String(boxNum).padStart(2, '0');
     row['Batch/Box'] = globalBatch;
 
     var code = buildCode(row['Batch Qty'], row._sku, row._po, row._shipNum, newTotalBoxes, boxNum);
     row['QR Code String (v4)'] = code;
     row['Package Sticker'] = code;
     row['Spare Part Sticker'] = code;
+    row['Battery Data UUID'] = row._uuid || '';
+    row['Landing Page URL'] = row._uuid ? 'https://qr.swappie.com/' + row._uuid : '';
 
     var d = codeToDisplay(code);
 
@@ -815,15 +819,17 @@ function onQtyEdit(e) {
           'SKU': row._sku,
           'PO Number': row._po,
           'Shipment #': String(row._shipNum).padStart(2, '0'),
-          'Total Boxes': 0,
-          'Box #': 0,
+          'Total Boxes': '00',
+          'Box #': '00',
+          'Battery Data UUID': row._uuid || '',
+          'Landing Page URL': row._uuid ? 'https://qr.swappie.com/' + row._uuid : '',
           'QR Code String (v4)': '',
           'Package Sticker': '',
           'Spare Part Sticker': '',
           _sku: row._sku, _po: row._po, _shipNum: row._shipNum,
           _totalBoxes: 0, _box: 0, _skuIdx: skuIdx,
           _skuTqty: skuTqty, _skuRowStart: row._skuRowStart,
-          _origBatchQty: origBatch
+          _origBatchQty: origBatch, _uuid: row._uuid
         });
         remaining -= boxQty;
       }
@@ -930,7 +936,7 @@ function downloadExcel() {
 
   const ws = XLSX.utils.aoa_to_sheet(excelRows);
   ws['!cols'] = [
-    {wch:10},{wch:12},{wch:14},{wch:16},{wch:10},{wch:12},{wch:8},{wch:65},{wch:65},{wch:65}
+    {wch:10},{wch:12},{wch:14},{wch:16},{wch:10},{wch:12},{wch:8},{wch:38},{wch:58},{wch:65},{wch:65},{wch:65}
   ];
 
   const wb = XLSX.utils.book_new();

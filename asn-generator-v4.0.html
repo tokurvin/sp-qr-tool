@@ -52,6 +52,7 @@
     margin-bottom: 16px;
   }
 
+  /* ── Global inputs ── */
   .global-row {
     display: grid;
     grid-template-columns: 220px 120px;
@@ -75,6 +76,7 @@
   input::placeholder { color: #ccc; opacity: 1; }
   .hint { font-size: 11px; color: #94a3b8; margin-top: 4px; }
 
+  /* ── SKU table ── */
   .sku-table-wrap { overflow-x: auto; }
   table.sku-input {
     width: 100%;
@@ -140,6 +142,7 @@
     flex-wrap: wrap;
   }
 
+  /* ── Results ── */
   #results { display: none; }
 
   .stats-bar {
@@ -213,6 +216,7 @@
   }
   .download-bar span { font-size: 12px; color: #64748b; }
 
+  /* ── Format note ── */
   .format-note {
     background: #eef2ff;
     border-left: 3px solid #6366f1;
@@ -232,6 +236,7 @@
 
   .error-msg { color: #ef4444; font-size: 12px; margin-top: 8px; display: none; }
 
+  /* ── Editable batch qty in results ── */
   .editable-qty {
     width: 62px;
     padding: 4px 6px;
@@ -271,6 +276,7 @@
     &nbsp;·&nbsp; Battery Data UUID required per SKU — <a href="battery-upload.html" target="_blank" style="color:#3730a3;font-weight:700">Register battery data ↗</a>
   </div>
 
+  <!-- ── Global inputs ── -->
   <div class="card">
     <div class="card-title">Shipment Details</div>
     <div class="global-row">
@@ -287,6 +293,7 @@
     </div>
   </div>
 
+  <!-- ── SKU rows ── -->
   <div class="card">
     <div class="card-title">SKUs in this Shipment</div>
     <div class="sku-table-wrap">
@@ -295,13 +302,14 @@
           <tr>
             <th style="width:28px">#</th>
             <th style="width:160px">SKU</th>
-            <th style="width:215px">Battery Data UUID &nbsp;<a href="battery-upload.html" target="_blank" style="font-size:10px;font-weight:600;color:#6366f1;text-transform:none;letter-spacing:0">get UUID ↗</a></th>
+            <th style="width:215px">Battery Data UUID</th>
             <th style="width:130px">Total Qty</th>
             <th style="width:155px">Batch Qty / Box</th>
             <th style="width:42px"></th>
           </tr>
         </thead>
         <tbody id="sku-tbody">
+          <!-- rows added by JS -->
         </tbody>
       </table>
     </div>
@@ -312,6 +320,7 @@
     </div>
   </div>
 
+  <!-- ── Results ── -->
   <div id="results">
     <div class="card">
       <div class="card-title">Generated Codes</div>
@@ -346,10 +355,11 @@
     </div>
   </div>
 
+  <!-- ── Landing page preview ── -->
   <div class="card" style="margin-top:8px">
     <div class="card-title">Preview EU Battery Landing Page</div>
     <p style="font-size:13px;color:#64748b;margin-bottom:14px;line-height:1.6">
-      Paste any v4 QR code (or full URL) below to preview the EU Battery Regulation landing page.
+      Paste any v4 QR code (or full URL) below to preview the EU Battery Regulation landing page — the page consumers and regulators would see when scanning the sticker.
     </p>
     <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
       <div style="flex:1;min-width:200px">
@@ -363,10 +373,14 @@
     </p>
   </div>
 
-</div>
+</div><!-- /container -->
 
 <script>
-const OUTPUT_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$";
+// ─────────────────────────────────────────────
+// Check digit algorithm (v4 · two chars · MOD 37)
+// Alphabet: A–Z (0–25), 0–9 (26–35), $ (36) — 37 symbols (prime)
+// ─────────────────────────────────────────────
+const OUTPUT_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$"; // 37 chars (prime)
 const URL_PREFIX = "HTTPS://QR.SWAPPIE.COM/";
 const DEMO_UUID  = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
 
@@ -382,14 +396,17 @@ function computeHash(str, multiplier) {
   let acc = 0;
   for (const c of str) {
     const v = charValue(c);
-    if (v < 0) return '?';
+    if (v < 0) return '?'; // unexpected char
     acc = (acc * multiplier + v) % 37;
   }
   return OUTPUT_ALPHABET[acc];
 }
 
+// Returns 2-character check string
 function computeCheckChars(str) {
-  return computeHash(str, 31) + computeHash(str, 17);
+  const c1 = computeHash(str, 31); // primary hash
+  const c2 = computeHash(str, 17); // secondary hash (independent)
+  return c1 + c2;
 }
 
 function buildCode(qty, sku, po, shipNum, totalBoxes, boxNum) {
@@ -397,11 +414,16 @@ function buildCode(qty, sku, po, shipNum, totalBoxes, boxNum) {
   const shipStr  = String(shipNum).padStart(2, '0');
   const totalStr = String(totalBoxes).padStart(2, '0');
   const boxStr   = String(boxNum).padStart(2, '0');
+  // po arrives as "POFI-00088285"
+  // Field order: {po_country}-{po_number}-{lp}-{shp#}-{boxes}-{box#}-{qty}:{checks}
   const path = `${po}-${sku}-${shipStr}-${totalStr}-${boxStr}-${qtyStr}`;
   const check = computeCheckChars(path);
   return URL_PREFIX + path + ':' + check;
 }
 
+// ─────────────────────────────────────────────
+// SKU row management
+// ─────────────────────────────────────────────
 let rowCount = 0;
 
 function addSkuRow(sku = '', totalQty = '', batchQty = '', uuid = '') {
@@ -413,7 +435,7 @@ function addSkuRow(sku = '', totalQty = '', batchQty = '', uuid = '') {
   tr.innerHTML = `
     <td style="color:#94a3b8;font-size:12px;text-align:center">${rowCount}</td>
     <td><input type="text" id="sku-${idx}" value="${sku}" placeholder="SMAPLP1234" spellcheck="false" autocomplete="off" style="width:148px"></td>
-    <td><input type="text" id="uuid-${idx}" value="${uuid}" placeholder="f47ac10b-58cc-4372-a567-…" spellcheck="false" autocomplete="off" style="width:203px;font-family:'SF Mono','Fira Code',monospace;font-size:12px"></td>
+    <td><div style="display:flex;align-items:center;gap:6px"><input type="text" id="uuid-${idx}" value="${uuid}" placeholder="f47ac10b-58cc-4372-a567-…" spellcheck="false" autocomplete="off" style="width:165px;font-family:'SF Mono','Fira Code',monospace;font-size:12px"><a href="battery-upload.html" target="_blank" title="Register new battery data and get a UUID for this SKU" style="font-size:10px;font-weight:600;color:#6366f1;text-decoration:none;white-space:nowrap">get ↗</a></div></td>
     <td><input type="number" id="tqty-${idx}" value="${totalQty}" placeholder="2325" min="1" autocomplete="off" style="width:118px"></td>
     <td><input type="number" id="bqty-${idx}" value="${batchQty}" placeholder="155" min="1" autocomplete="off" style="width:140px"></td>
     <td><button class="btn-icon" onclick="removeRow(${idx})" title="Remove">×</button></td>
@@ -424,15 +446,20 @@ function addSkuRow(sku = '', totalQty = '', batchQty = '', uuid = '') {
 function removeRow(idx) {
   const el = document.getElementById(`sku-row-${idx}`);
   if (el) el.remove();
+  // Renumber display
   document.querySelectorAll('#sku-tbody tr').forEach((tr, i) => {
     tr.cells[0].textContent = i + 1;
   });
 }
 
+// Seed with 2 empty rows on load
 addSkuRow();
 addSkuRow();
 
-let generatedRows = [];
+// ─────────────────────────────────────────────
+// Generation
+// ─────────────────────────────────────────────
+let generatedRows = []; // for download
 
 function showError(msg) {
   const el = document.getElementById('error-msg');
@@ -441,6 +468,7 @@ function showError(msg) {
 }
 
 function codeToDisplay(code) {
+  // Splits a full v4 code into base (including trailing dash) and check chars for display
   const checkChars = code.slice(-2);
   const base = code.slice(0, -2);
   return { base, checkChars };
@@ -449,6 +477,7 @@ function codeToDisplay(code) {
 function generate() {
   showError('');
 
+  // Validate global fields
   const po = document.getElementById('po-number').value.trim().toUpperCase();
   const shipNum = parseInt(document.getElementById('shipment-num').value, 10);
 
@@ -465,6 +494,7 @@ function generate() {
     return;
   }
 
+  // Collect SKU rows
   const skuRows = [];
   const trs = document.querySelectorAll('#sku-tbody tr');
   for (let i = 0; i < trs.length; i++) {
@@ -480,7 +510,7 @@ function generate() {
     const tqty  = parseInt(tqtyInput.value, 10);
     const bqty  = parseInt(bqtyInput.value, 10);
 
-    if (!sku) continue;
+    if (!sku) continue; // skip blank rows
 
     if (!/^(SM|TB|LT)APLP\d{1,5}$/.test(sku)) {
       showError(`Row ${i+1}: SKU "${sku}" is invalid. Must be SM/TB/LT + APLP + 1–5 digits (e.g. SMAPLP1829).`);
@@ -489,15 +519,28 @@ function generate() {
     }
     skuInput.classList.remove('invalid');
 
-    if (isNaN(tqty) || tqty < 1) { showError(`Row ${i+1}: Total Qty must be a positive number.`); return; }
-    if (isNaN(bqty) || bqty < 1) { showError(`Row ${i+1}: Batch Qty must be a positive number.`); return; }
-    if (bqty > tqty) { showError(`Row ${i+1}: Batch Qty per box (${bqty}) cannot exceed Total Qty (${tqty}).`); return; }
+    if (isNaN(tqty) || tqty < 1) {
+      showError(`Row ${i+1}: Total Qty must be a positive number.`);
+      return;
+    }
+    if (isNaN(bqty) || bqty < 1) {
+      showError(`Row ${i+1}: Batch Qty must be a positive number.`);
+      return;
+    }
+    if (bqty > tqty) {
+      showError(`Row ${i+1}: Batch Qty per box (${bqty}) cannot exceed Total Qty (${tqty}).`);
+      return;
+    }
 
     skuRows.push({ sku, tqty, bqty, uuid });
   }
 
-  if (skuRows.length === 0) { showError('Please add at least one SKU.'); return; }
+  if (skuRows.length === 0) {
+    showError('Please add at least one SKU.');
+    return;
+  }
 
+  // Build result rows
   generatedRows = [];
   const tbody = document.getElementById('result-tbody');
   tbody.innerHTML = '';
@@ -509,9 +552,10 @@ function generate() {
   skuRows.forEach(({ sku, tqty, bqty, uuid }, skuIdx) => {
     const totalBoxes = Math.ceil(tqty / bqty);
 
+    // Separator row with total tracker
     const sepTr = document.createElement('tr');
     sepTr.className = 'sep-row';
-    sepTr.innerHTML = `<td colspan="8">SKU ${sku} · <span id="sku-total-${skuIdx}">${tqty}</span> / ${tqty} units in ${totalBoxes} box${totalBoxes !== 1 ? 'es' : ''}</td>`;
+    sepTr.innerHTML = `<td colspan="8">SKU ${sku} · <span id="sku-total-${skuIdx}">${tqty}</span> / ${tqty} units in ${totalBoxes} box${totalBoxes !== 1 ? 'es' : ''} <span class="qty-total-note" id="sku-note-${skuIdx}"></span></td>`;
     tbody.appendChild(sepTr);
 
     const skuRowStart = generatedRows.length;
@@ -526,6 +570,7 @@ function generate() {
 
       const rowIdx = generatedRows.length;
 
+      // Table row with editable qty
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${globalBatch}</td>
@@ -540,6 +585,7 @@ function generate() {
       `;
       tbody.appendChild(tr);
 
+      // For download
       generatedRows.push({
         'Batch/Box': globalBatch,
         'Batch Qty': qty,
@@ -560,6 +606,9 @@ function generate() {
     totalBoxesAll += totalBoxes;
   });
 
+  // Event delegation is set up once via initQtyEditing()
+
+  // Stats
   const statsBar = document.getElementById('stats-bar');
   statsBar.innerHTML = `
     <div class="stat"><div class="stat-value">${skuRows.length}</div><div class="stat-label">SKUs</div></div>
@@ -572,6 +621,10 @@ function generate() {
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// ─────────────────────────────────────────────
+// Live edit of batch qty in results
+// (uses event delegation on result-tbody for reliability)
+// ─────────────────────────────────────────────
 let qtyEditingInitialized = false;
 
 function initQtyEditing() {
@@ -583,17 +636,29 @@ function initQtyEditing() {
   tbody.addEventListener('focusout', function(e) {
     if (e.target.classList.contains('editable-qty')) onQtyEdit(e);
   });
+
   tbody.addEventListener('keydown', function(e) {
-    if (e.target.classList.contains('editable-qty') && e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+    if (e.target.classList.contains('editable-qty') && e.key === 'Enter') {
+      e.preventDefault();
+      e.target.blur();
+    }
   });
+
   tbody.addEventListener('change', function(e) {
-    if (e.target.classList.contains('editable-qty') && !e.target._typing) onQtyEdit(e);
+    if (e.target.classList.contains('editable-qty') && !e.target._typing) {
+      onQtyEdit(e);
+    }
   });
+
   tbody.addEventListener('keypress', function(e) {
-    if (e.target.classList.contains('editable-qty')) e.target._typing = true;
+    if (e.target.classList.contains('editable-qty')) {
+      e.target._typing = true;
+    }
   });
   tbody.addEventListener('focusin', function(e) {
-    if (e.target.classList.contains('editable-qty')) e.target._typing = false;
+    if (e.target.classList.contains('editable-qty')) {
+      e.target._typing = false;
+    }
   });
 }
 
@@ -606,7 +671,9 @@ function updateRowDisplay(rowIdx) {
   row['Spare Part Sticker'] = code;
 
   var qtyInput = document.getElementById('rqty-' + rowIdx);
-  if (qtyInput && qtyInput !== document.activeElement) qtyInput.value = row['Batch Qty'];
+  if (qtyInput && qtyInput !== document.activeElement) {
+    qtyInput.value = row['Batch Qty'];
+  }
 
   var codeEl = document.getElementById('rcode-' + rowIdx);
   if (codeEl) {
@@ -636,6 +703,7 @@ function rebuildResultTable() {
     var si = row._skuIdx;
     var newTotalBoxes = skuBoxCounts[si];
 
+    // SKU separator row
     if (si !== currentSkuIdx) {
       currentSkuIdx = si;
       skuCount++;
@@ -715,13 +783,17 @@ function onQtyEdit(e) {
 
   var skuRowIndices = [];
   for (var i = 0; i < generatedRows.length; i++) {
-    if (generatedRows[i]._skuIdx === skuIdx) skuRowIndices.push(i);
+    if (generatedRows[i]._skuIdx === skuIdx) {
+      skuRowIndices.push(i);
+    }
   }
 
   var editedPos = skuRowIndices.indexOf(rowIdx);
   if (editedPos >= 0) {
     var sumBefore = 0;
-    for (var j = 0; j <= editedPos; j++) sumBefore += generatedRows[skuRowIndices[j]]['Batch Qty'];
+    for (var j = 0; j <= editedPos; j++) {
+      sumBefore += generatedRows[skuRowIndices[j]]['Batch Qty'];
+    }
     var remaining = Math.max(0, skuTqty - sumBefore);
     var origBatch = row._origBatchQty;
 
@@ -738,11 +810,20 @@ function onQtyEdit(e) {
       while (remaining > 0) {
         var boxQty = Math.min(remaining, origBatch);
         newRows.push({
-          'Batch/Box': 0, 'Batch Qty': boxQty, 'SKU': row._sku, 'PO Number': row._po,
-          'Shipment #': String(row._shipNum).padStart(2, '0'), 'Total Boxes': 0, 'Box #': 0,
-          'QR Code String (v4)': '', 'Package Sticker': '', 'Spare Part Sticker': '',
-          _sku: row._sku, _po: row._po, _shipNum: row._shipNum, _totalBoxes: 0, _box: 0,
-          _skuIdx: skuIdx, _skuTqty: skuTqty, _skuRowStart: row._skuRowStart, _origBatchQty: origBatch
+          'Batch/Box': 0,
+          'Batch Qty': boxQty,
+          'SKU': row._sku,
+          'PO Number': row._po,
+          'Shipment #': String(row._shipNum).padStart(2, '0'),
+          'Total Boxes': 0,
+          'Box #': 0,
+          'QR Code String (v4)': '',
+          'Package Sticker': '',
+          'Spare Part Sticker': '',
+          _sku: row._sku, _po: row._po, _shipNum: row._shipNum,
+          _totalBoxes: 0, _box: 0, _skuIdx: skuIdx,
+          _skuTqty: skuTqty, _skuRowStart: row._skuRowStart,
+          _origBatchQty: origBatch
         });
         remaining -= boxQty;
       }
@@ -754,8 +835,12 @@ function onQtyEdit(e) {
   rebuildResultTable();
 }
 
+// Initialize event delegation immediately
 initQtyEditing();
 
+// ─────────────────────────────────────────────
+// UUID validation for download
+// ─────────────────────────────────────────────
 function checkUuids() {
   for (const row of generatedRows) {
     if (!row._uuid) return 'Battery Data UUID missing for one or more SKUs. Get a UUID from the registration portal before downloading.';
@@ -776,7 +861,11 @@ function clearDownloadError() {
   el.style.display = 'none';
 }
 
+// ─────────────────────────────────────────────
+// Landing page preview
+// ─────────────────────────────────────────────
 function codeToPreviewHash(code) {
+  // Strip full URL prefix if present, keep just the path+check
   const prefix = 'HTTPS://QR.SWAPPIE.COM/';
   let c = code.trim().toUpperCase();
   if (c.startsWith(prefix)) c = c.slice(prefix.length);
@@ -784,6 +873,8 @@ function codeToPreviewHash(code) {
 }
 
 function previewUrl(code) {
+  // Use path-based URL to match the real production format (qr.swappie.com/CODE)
+  // On GitHub Pages, 404.html catches this and redirects to battery.html#CODE
   const c = codeToPreviewHash(code);
   return window.location.origin + '/sp-qr-tool/' + c;
 }
@@ -791,7 +882,11 @@ function previewUrl(code) {
 function openPreview() {
   const input = document.getElementById('preview-input').value.trim();
   const errEl = document.getElementById('preview-error');
-  if (!input) { errEl.textContent = 'Please paste a v4 code first.'; errEl.style.display = 'block'; return; }
+  if (!input) {
+    errEl.textContent = 'Please paste a v4 code first.';
+    errEl.style.display = 'block';
+    return;
+  }
   errEl.style.display = 'none';
   window.open(previewUrl(input), '_blank');
 }
@@ -800,6 +895,9 @@ function openPreviewForRow(code) {
   window.open(previewUrl(code), '_blank');
 }
 
+// ─────────────────────────────────────────────
+// Downloads
+// ─────────────────────────────────────────────
 function getFilenameBase() {
   const po = document.getElementById('po-number').value.trim().toUpperCase() || 'ASN';
   return `ASN ${po}`;
@@ -817,7 +915,9 @@ function downloadExcel() {
 
   let lastSku = null;
   generatedRows.forEach(row => {
-    if (lastSku !== null && row['SKU'] !== lastSku) excelRows.push(new Array(headers.length).fill(''));
+    if (lastSku !== null && row['SKU'] !== lastSku) {
+      excelRows.push(new Array(headers.length).fill(''));
+    }
     excelRows.push(headers.map(h => row[h]));
     lastSku = row['SKU'];
   });
@@ -829,7 +929,9 @@ function downloadExcel() {
   excelRows.push(totals);
 
   const ws = XLSX.utils.aoa_to_sheet(excelRows);
-  ws['!cols'] = [{wch:10},{wch:12},{wch:14},{wch:16},{wch:10},{wch:12},{wch:8},{wch:65},{wch:65},{wch:65}];
+  ws['!cols'] = [
+    {wch:10},{wch:12},{wch:14},{wch:16},{wch:10},{wch:12},{wch:8},{wch:65},{wch:65},{wch:65}
+  ];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'ASN');
@@ -840,15 +942,26 @@ function downloadExcel() {
 }
 
 function triggerDownload(blob, filename) {
-  if (window.navigator && window.navigator.msSaveOrOpenBlob) { window.navigator.msSaveOrOpenBlob(blob, filename); return; }
+  if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+    window.navigator.msSaveOrOpenBlob(blob, filename);
+    return;
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = filename; a.rel = 'noopener';
+  a.href = url;
+  a.download = filename;
+  a.rel = 'noopener';
   document.body.appendChild(a);
   a.click();
-  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
 }
 
+// ─────────────────────────────────────────────
+// Page reset — ensure clean state on every load
+// ─────────────────────────────────────────────
 window.addEventListener('pageshow', function() {
   document.getElementById('po-number').value = '';
   document.getElementById('shipment-num').value = '1';
@@ -857,7 +970,8 @@ window.addEventListener('pageshow', function() {
   document.getElementById('result-tbody').innerHTML = '';
   document.getElementById('stats-bar').innerHTML = '';
   document.querySelectorAll('#sku-tbody input').forEach(function(input) {
-    input.value = ''; input.classList.remove('invalid');
+    input.value = '';
+    input.classList.remove('invalid');
   });
   showError('');
 });

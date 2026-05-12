@@ -213,7 +213,8 @@
     <div class="success-note">
       This is a <strong>new UUID</strong> — use it in the <a href="asn-generator-v4.0.html">ASN Generator</a> for all new shipments of this SKU.<br>
       Previous UUIDs remain valid; QR codes already printed continue to resolve correctly.<br>
-      Load this UUID here any time to use it as a starting point for a future update.
+      <strong>Direct data sheet link</strong> (for box label / shipment leaflet):<br>
+      <a id="direct-link" href="#" onclick="return false" style="font-family:'SF Mono','Fira Code',monospace;font-size:12px;word-break:break-all"></a>
     </div>
   </div>
 
@@ -475,7 +476,7 @@ const SAMPLE = {
   docUrl:         'https://example.com/doc/SMAPLP1003-DoC.pdf',
   manufacturer:   'Sample Battery Co., Ltd.',
   countryMfg:     'China',
-  versionNote:    '',
+  versionNote:    '',   // blank on v1
 };
 
 function fillForm(d) {
@@ -535,7 +536,7 @@ function loadByUuid() {
   }
   if (val === DEMO_UUID) {
     fillForm(SAMPLE);
-    _loadedVersion = 1;
+    _loadedVersion = 1;  // demo record is version 1
     _isUpdateMode  = true;
     msg.textContent = '✓ Version 1 loaded (SW-SUP-0042 × SMAPLP1003).';
     msg.style.color = '#166534';
@@ -556,13 +557,20 @@ function submitForm(e) {
   e.preventDefault();
   const supplierId  = document.getElementById('f-supplier-id').value.trim() || '(no supplier ID)';
   const sku         = document.getElementById('f-sku').value.trim().toUpperCase() || '(no SKU)';
+  const versionNote = document.getElementById('f-version-note').value.trim();
+
   const newVersion  = _isUpdateMode ? _loadedVersion + 1 : 1;
 
   const panel = document.getElementById('success-panel');
   document.getElementById('uuid-display').textContent = DEMO_UUID;
   document.getElementById('success-supplier-sku').textContent = `${supplierId} × ${sku}`;
+  const directUrl = `https://qr.swappie.com/${DEMO_UUID}`;
+  const linkEl = document.getElementById('direct-link');
+  linkEl.textContent = directUrl;
+  linkEl.href = `battery.html#${DEMO_UUID}`;  // local demo link
   document.getElementById('success-version-badge').textContent = `Version ${newVersion}`;
 
+  // After a successful submit, next submit from same session would be v+1
   _loadedVersion = newVersion;
   _isUpdateMode  = true;
   document.getElementById('submit-btn').textContent = `Submit as Version ${newVersion + 1} →`;

@@ -119,6 +119,7 @@
     margin-top: 8px;
   }
 
+  /* ── Success panel ── */
   #success-panel {
     display: none;
     background: #fff;
@@ -177,6 +178,7 @@
     <p class="subtitle">Submit battery specification data per SKU · EU Battery Regulation 2023/1542 · Swappie Supplier Portal</p>
   </header>
 
+  <!-- Success panel (shown after submit) -->
   <div id="success-panel">
     <div class="success-icon">✅</div>
     <div class="success-title">Battery data registered successfully</div>
@@ -184,15 +186,17 @@
     <div class="success-uuid" id="uuid-display"></div><br>
     <button class="copy-btn" onclick="copyUuid()">📋 Copy UUID</button>
     <div class="success-note">
-      Use this UUID in the <a href="asn-generator-v4.0.html">ASN Generator</a> when creating QR codes for this SKU.<br>
+      This UUID uniquely identifies your battery data for <strong id="success-supplier-sku"></strong>.<br>
+      Use it in the <a href="asn-generator-v4.0.html">ASN Generator</a> when creating QR codes for this SKU.<br>
       Keep it safe — enter it here any time to load and update this record.
     </div>
   </div>
 
+  <!-- Load existing record -->
   <div class="card">
     <div class="card-title">📂 Load Existing Record</div>
     <p style="font-size:13px;color:#64748b;margin-bottom:14px;line-height:1.6">
-      Already have a Battery Data UUID for this SKU? Enter it below to pre-fill the form.
+      Already have a Battery Data UUID for this SKU? Enter it below to pre-fill the form — useful when creating a new version based on an existing record.
     </p>
     <div class="uuid-row">
       <input type="text" id="load-uuid" placeholder="f47ac10b-58cc-4372-a567-0e02b2c3d479" spellcheck="false" autocomplete="off">
@@ -201,11 +205,18 @@
     <div id="load-msg" style="font-size:12px;margin-top:8px;display:none"></div>
   </div>
 
+  <!-- Form -->
   <form id="battery-form" onsubmit="submitForm(event)">
 
+    <!-- 1. Product Identity -->
     <div class="card">
       <div class="card-title">🔋 Product Identity</div>
       <div class="form-grid">
+        <div class="form-group span-2">
+          <label for="f-supplier-id">Supplier ID</label>
+          <input type="text" id="f-supplier-id" placeholder="SW-SUP-0042" spellcheck="false" autocomplete="off">
+          <div class="hint">Your Swappie supplier code — assigned by Swappie procurement. This, combined with the SKU, uniquely identifies your battery data record.</div>
+        </div>
         <div class="form-group">
           <label for="f-sku">SKU (APLP code)</label>
           <input type="text" id="f-sku" placeholder="SMAPLP1003" spellcheck="false" autocomplete="off">
@@ -227,6 +238,7 @@
       </div>
     </div>
 
+    <!-- 2. Performance & Lifespan -->
     <div class="card">
       <div class="card-title">⚡ Performance &amp; Lifespan</div>
       <div class="form-grid">
@@ -269,6 +281,7 @@
       </div>
     </div>
 
+    <!-- 3. Chemical Composition -->
     <div class="card">
       <div class="card-title">🧪 Chemical Composition</div>
       <div class="form-grid">
@@ -316,6 +329,7 @@
       </div>
     </div>
 
+    <!-- 4. Carbon Footprint -->
     <div class="card">
       <div class="card-title">🌍 Carbon Footprint</div>
       <div class="form-grid">
@@ -338,6 +352,7 @@
       </div>
     </div>
 
+    <!-- 5. Recycled Content -->
     <div class="card">
       <div class="card-title">♻️ Recycled Content</div>
       <div class="form-grid">
@@ -356,6 +371,7 @@
       </div>
     </div>
 
+    <!-- 6. Legal & Compliance -->
     <div class="card">
       <div class="card-title">📋 Legal &amp; Compliance</div>
       <div class="form-grid">
@@ -387,6 +403,7 @@
 const DEMO_UUID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
 
 const SAMPLE = {
+  supplierId:     'SW-SUP-0042',
   sku:            'SMAPLP1003',
   deviceType:     'SM',
   productName:    'Smartphone Replacement Battery',
@@ -419,6 +436,7 @@ const SAMPLE = {
 };
 
 function fillForm(d) {
+  document.getElementById('f-supplier-id').value   = d.supplierId     || '';
   document.getElementById('f-sku').value            = d.sku            || '';
   document.getElementById('f-device-type').value   = d.deviceType     || '';
   document.getElementById('f-product-name').value  = d.productName    || '';
@@ -453,6 +471,7 @@ function fillForm(d) {
 function clearForm() {
   document.getElementById('battery-form').reset();
   document.getElementById('success-panel').style.display = 'none';
+  document.getElementById('success-supplier-sku').textContent = '';
 }
 
 function loadByUuid() {
@@ -479,8 +498,11 @@ function loadByUuid() {
 
 function submitForm(e) {
   e.preventDefault();
+  const supplierId = document.getElementById('f-supplier-id').value.trim() || '(no supplier ID)';
+  const sku        = document.getElementById('f-sku').value.trim().toUpperCase() || '(no SKU)';
   const panel = document.getElementById('success-panel');
   document.getElementById('uuid-display').textContent = DEMO_UUID;
+  document.getElementById('success-supplier-sku').textContent = `${supplierId} × ${sku}`;
   panel.style.display = 'block';
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

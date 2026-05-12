@@ -98,6 +98,18 @@
     padding: 36px 20px 60px;
   }
 
+  .decision-note {
+    background: #ecfdf5;
+    border-left: 3px solid #10b981;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #065f46;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+  .decision-note strong { color: #064e3b; }
+
   /* Section groups */
   .section-group { margin-bottom: 44px; }
 
@@ -135,6 +147,7 @@
   }
   .group-badge-green { background: #dcfce7; color: #166534; }
   .group-badge-amber { background: #fef9c3; color: #854d0e; }
+  .group-badge-grey  { background: #e2e8f0; color: #475569; }
 
   .tools-grid {
     display: grid;
@@ -172,6 +185,27 @@
   .tool-card.blue::before   { background: linear-gradient(90deg, #0ea5e9, #6366f1); }
   .tool-card.teal::before   { background: linear-gradient(90deg, #14b8a6, #0ea5e9); }
 
+  .tool-card.deprecated {
+    opacity: .62;
+    background: #fafbfd;
+  }
+  .tool-card.deprecated::before { background: #cbd5e1 !important; }
+  .tool-card.deprecated:hover { transform: none; box-shadow: 0 2px 8px rgba(0,0,0,.04); border-color: #e2e8f0; }
+  .tool-card.deprecated .tool-arrow { color: #cbd5e1; }
+  .tool-card.deprecated:hover .tool-arrow { color: #94a3b8; transform: none; }
+  .deprecated-banner {
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+
   .tool-icon { font-size: 28px; margin-bottom: 14px; line-height: 1; }
   .tool-title { font-size: 17px; font-weight: 700; letter-spacing: -.2px; margin-bottom: 6px; }
   .tool-desc { font-size: 13px; color: #64748b; line-height: 1.6; flex: 1; }
@@ -190,6 +224,7 @@
     letter-spacing: .4px; padding: 2px 7px; border-radius: 4px;
     background: #f1f5f9; color: #64748b;
   }
+  .tag-primary { background: #ddd6fe; color: #5b21b6; }
   .tool-arrow { font-size: 18px; color: #cbd5e1; transition: color .15s, transform .15s; }
   .tool-card:hover .tool-arrow { color: #6366f1; transform: translateX(3px); }
 
@@ -269,7 +304,7 @@
   <div class="header-inner">
     <div class="header-eyebrow">SP Tools</div>
     <h1>Spare Parts QR Tools</h1>
-    <p>Generate and validate spare parts LOT labels. v3 is in production; v4 adds EU Battery Regulation compliance with URL-based QR codes and two check characters.</p>
+    <p>Tools for generating, validating and registering battery data for spare parts. The v4.0 QR spec is the unified standard — same code serves both internal SP traceability and EU Battery Regulation 2023/1542 customer disclosure.</p>
   </div>
 </header>
 
@@ -281,54 +316,72 @@
     <span class="strip-divider"></span>
     <span class="strip-label">v3</span>
     <span class="badge badge-purple"><span class="badge-dot"></span>MOD 29 · 1 check char</span>
-    <span class="badge badge-rose"><span class="badge-dot"></span>Rollout paused</span>
-    <span class="badge badge-amber"><span class="badge-dot"></span>QR V2-M</span>
+    <span class="badge badge-rose"><span class="badge-dot"></span>Deprecated</span>
     <span class="strip-divider"></span>
-    <span class="strip-label">v4</span>
+    <span class="strip-label">v4.0</span>
     <span class="badge badge-blue"><span class="badge-dot"></span>MOD 37 · 2 check chars</span>
     <span class="badge badge-blue"><span class="badge-dot"></span>URL QR · EU compliant</span>
-    <span class="badge badge-rose"><span class="badge-dot"></span>Draft — rollout paused</span>
+    <span class="badge badge-green"><span class="badge-dot"></span>Unified standard</span>
   </div>
 </div>
 
 <div class="container">
 
-  <!-- v3 -->
+  <div class="decision-note">
+    <strong>2026-05-12 decision (SP traceability meeting):</strong> v4.0 is the unified standard going forward — the same code serves SP traceability (WMS / Hemuli scan the string as a lot identifier) <em>and</em> customer-facing EU Battery Regulation disclosure (phone camera opens the URL). <strong>v3 and v4.1 are deprecated</strong> — kept here for reference and for handling legacy codes still in the field.
+  </div>
+
+  <!-- v4.0 CURRENT STANDARD -->
   <div class="section-group">
     <div class="section-group-header">
-      <div class="section-group-title">v3 — Rollout paused</div>
-      <span class="group-badge group-badge-amber">Paused Apr 2026</span>
-      <div class="section-group-desc">Adds check char (mod 29) and shipment number to v1. Ready to ship, but rollout paused pending EU Battery Regulation clarity. Current production is still <strong>v1</strong> (no check char).</div>
+      <div class="section-group-title">v4.0 — Current standard</div>
+      <span class="group-badge group-badge-green">Canonical · 2026-05-12</span>
+      <div class="section-group-desc">URL-based QR with two check chars (mod 37). Scanned by WMS / Hemuli as a lot identifier, by customer phones as the URL to the EU data sheet.</div>
     </div>
     <div class="tools-grid">
 
-      <a href="qr-checker.html" class="tool-card purple">
-        <div class="tool-icon">🔍</div>
-        <div class="tool-title">QR Code Checker</div>
+      <a href="asn-generator-v4.0.html" class="tool-card blue">
+        <div class="tool-icon">📦</div>
+        <div class="tool-title">ASN Generator v4.0</div>
         <div class="tool-desc">
-          Build or validate a single v3 QR code field by field. Paste an existing code to verify its check letter, or enter fields manually to generate a new code with live QR preview.
+          Bulk-generate v4.0 URL format codes for a full shipment. Enter PO + SKU rows with quantities and UUIDs — get a complete ASN table downloadable as Excel or CSV. UUID-gated.
         </div>
         <div class="tool-footer">
           <div class="tool-tags">
-            <span class="tag">Single code</span>
-            <span class="tag">Validate</span>
-            <span class="tag">QR preview</span>
+            <span class="tag tag-primary">Canonical</span>
+            <span class="tag">URL format</span>
+            <span class="tag">EU compliant</span>
           </div>
           <span class="tool-arrow">→</span>
         </div>
       </a>
 
-      <a href="asn-generator.html" class="tool-card green">
-        <div class="tool-icon">📦</div>
-        <div class="tool-title">ASN Generator</div>
+      <a href="battery-upload.html" class="tool-card teal">
+        <div class="tool-icon">🔋</div>
+        <div class="tool-title">Battery Data Registration</div>
         <div class="tool-desc">
-          Mass-generate v3 QR codes for a full shipment. Enter the PO number, shipment number, and each SKU with its total quantity and batch size — get a complete ASN table with check digits, downloadable as Excel or CSV.
+          Supplier portal for registering EU Battery Regulation data (chemistry, capacity, carbon footprint, recycled content, DoC). Each submission issues a new UUID — used in the ASN generator and on the customer landing page.
         </div>
         <div class="tool-footer">
           <div class="tool-tags">
-            <span class="tag">Multi-SKU</span>
-            <span class="tag">Bulk generate</span>
-            <span class="tag">Excel / CSV</span>
+            <span class="tag tag-primary">Suppliers</span>
+            <span class="tag">EU 2023/1542</span>
+            <span class="tag">UUID</span>
+          </div>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+      <a href="battery.html#f47ac10b-58cc-4372-a567-0e02b2c3d479" class="tool-card amber">
+        <div class="tool-icon">📄</div>
+        <div class="tool-title">Battery Landing Page</div>
+        <div class="tool-desc">
+          Customer-facing data sheet shown when a v4.0 QR (battery sticker) or UUID URL (retail box / leaflet) is scanned. Renders the EU-required spec data. Demo / preview only.
+        </div>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span class="tag">Customer-facing</span>
+            <span class="tag">Demo</span>
           </div>
           <span class="tool-arrow">→</span>
         </div>
@@ -337,74 +390,86 @@
     </div>
   </div>
 
-  <!-- v4 -->
+  <!-- v3 DEPRECATED -->
   <div class="section-group">
     <div class="section-group-header">
-      <div class="section-group-title">v4 — EU Battery Regulation</div>
-      <span class="group-badge group-badge-amber">Draft · Rollout paused</span>
-      <div class="section-group-desc">URL-based QR (opens browser directly), two check chars (mod 37). v4.0 for battery stickers; v4.1 for internal traceability only.</div>
+      <div class="section-group-title">v3 — Deprecated</div>
+      <span class="group-badge group-badge-grey">Deprecated 2026-05-12</span>
+      <div class="section-group-desc">Single check char (mod 29). Superseded by v4.0. Kept for validating legacy codes still in the field. Do not use for new POs.</div>
     </div>
     <div class="tools-grid">
 
-      <a href="qr-checker-v4.html" class="tool-card blue">
+      <a href="qr-checker.html" class="tool-card deprecated">
+        <div class="deprecated-banner">⚠ Deprecated · v3</div>
+        <div class="tool-icon">🔍</div>
+        <div class="tool-title">QR Code Checker (v3)</div>
+        <div class="tool-desc">
+          Build or validate a single v3 QR code field by field. Paste an existing code to verify its check letter, or enter fields manually with live QR preview.
+        </div>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span class="tag">Legacy v3</span>
+            <span class="tag">Validate only</span>
+          </div>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+      <a href="asn-generator.html" class="tool-card deprecated">
+        <div class="deprecated-banner">⚠ Deprecated · v3</div>
+        <div class="tool-icon">📦</div>
+        <div class="tool-title">ASN Generator (v3)</div>
+        <div class="tool-desc">
+          Old bulk generator for v3 codes. Kept for replaying historical v3 shipments. Use the v4.0 ASN generator above for all new POs.
+        </div>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span class="tag">Legacy v3</span>
+            <span class="tag">No EU data</span>
+          </div>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- v4.1 DEPRECATED -->
+  <div class="section-group">
+    <div class="section-group-header">
+      <div class="section-group-title">v4.1 — Deprecated</div>
+      <span class="group-badge group-badge-grey">Deprecated 2026-05-12</span>
+      <div class="section-group-desc">Interim variant without the URL prefix — designed for internal-only use. Superseded by v4.0 once we confirmed one code can serve both internal scanners (read as-is) and customer phones (read as URL).</div>
+    </div>
+    <div class="tools-grid">
+
+      <a href="qr-checker-v4.html" class="tool-card deprecated">
+        <div class="deprecated-banner">⚠ Deprecated</div>
         <div class="tool-icon">🔍</div>
         <div class="tool-title">QR Code Checker v4</div>
         <div class="tool-desc">
-          Validate or generate v4 codes — shows v4.0 (URL) and v4.1 (no URL) side by side with live QR previews. Paste any v4 code to verify its two check characters, or fill in the fields to build a new one.
+          Validates v4.0 and v4.1 codes side by side. Useful for cross-referencing during the transition. Will be retired once all v3 codes have aged out.
         </div>
         <div class="tool-footer">
           <div class="tool-tags">
             <span class="tag">v4.0 + v4.1</span>
-            <span class="tag">Validate</span>
-            <span class="tag">QR preview</span>
+            <span class="tag">Cross-check</span>
           </div>
           <span class="tool-arrow">→</span>
         </div>
       </a>
 
-      <a href="asn-generator-v4.0.html" class="tool-card blue">
-        <div class="tool-icon">📦</div>
-        <div class="tool-title">ASN Generator v4.0</div>
-        <div class="tool-desc">
-          Bulk-generate v4.0 URL format codes — the EU Battery Regulation compliant battery sticker format. Codes open <code style="font-size:11px;background:#f1f5f9;padding:1px 4px;border-radius:3px;">qr.swappie.com</code> directly when scanned by recyclers or customers.
-        </div>
-        <div class="tool-footer">
-          <div class="tool-tags">
-            <span class="tag">URL format</span>
-            <span class="tag">EU compliant</span>
-            <span class="tag">Excel / CSV</span>
-          </div>
-          <span class="tool-arrow">→</span>
-        </div>
-      </a>
-
-      <a href="asn-generator-v4.1.html" class="tool-card teal">
+      <a href="asn-generator-v4.1.html" class="tool-card deprecated">
+        <div class="deprecated-banner">⚠ Deprecated · v4.1</div>
         <div class="tool-icon">📦</div>
         <div class="tool-title">ASN Generator v4.1</div>
         <div class="tool-desc">
-          Bulk-generate v4.1 no-URL codes — same field structure and check chars as v4.0 but without the URL prefix. Intended for internal traceability where codes are only scanned by Hemuli, not by end users or recyclers.
+          No-URL variant. Replaced by v4.0 as the unified standard — there is no longer a reason to omit the URL prefix from internal codes.
         </div>
         <div class="tool-footer">
           <div class="tool-tags">
             <span class="tag">No URL</span>
             <span class="tag">Internal only</span>
-            <span class="tag">Excel / CSV</span>
-          </div>
-          <span class="tool-arrow">→</span>
-        </div>
-      </a>
-
-      <a href="battery.html#POFI-00088285-SMAPLP1003-01-05-03-0010:BK" class="tool-card amber">
-        <div class="tool-icon">🔋</div>
-        <div class="tool-title">Battery Landing Page</div>
-        <div class="tool-desc">
-          Demo mockup of what end users and recyclers see when they scan a v4.0 battery sticker QR code. Shows EU Battery Regulation required information. Opens with an example code — use the preview link in QR Checker v4 to open with your own generated code. Content and URL are not final.
-        </div>
-        <div class="tool-footer">
-          <div class="tool-tags">
-            <span class="tag">Demo</span>
-            <span class="tag">EU compliance</span>
-            <span class="tag">Not final</span>
           </div>
           <span class="tool-arrow">→</span>
         </div>
@@ -418,8 +483,45 @@
 
   <div class="spec-card">
     <div class="spec-card-title">
-      v1 format — current production
-      <span class="group-badge group-badge-green">Live since Dec 2025</span>
+      v4.0 format — current standard
+      <span class="group-badge group-badge-green">Canonical</span>
+    </div>
+    <div class="spec-code">
+<span class="s-url">HTTPS://QR.SWAPPIE.COM/</span><span class="s-v4po">POFI-00090005</span>-<span class="s-v4sku">SMAPLP1829</span>-<span class="s-v4nav">01</span>-<span class="s-v4nav">15</span>-<span class="s-v4nav">01</span>-<span class="s-v4qty">0155</span>:<span class="s-v4chk">BK</span>
+    </div>
+    <div class="spec-legend">
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#94a3b8"></div>URL prefix — opens browser directly when scanned by a phone</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#d97706"></div>PO number</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#7c3aed"></div>SKU</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#16a34a"></div>Shipment # · Total boxes · Box #</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#2563eb"></div>Batch qty — 4 digits, zero-padded</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#3730a3"></div>Two check chars — A–Z, 0–9, $</div>
+    </div>
+    <div class="algo-row">
+      <div class="algo-item">
+        <strong>Dual use</strong>
+        Internal scanners (WMS, Hemuli) read the string as a flat lot identifier — no browser, no URL fetch. Customer phones read the URL and open the EU data sheet.
+      </div>
+      <div class="algo-item">
+        <strong>Two independent check chars</strong>
+        <code>c1 = hash(str, mult=31) mod 37</code><br>
+        <code>c2 = hash(str, mult=17) mod 37</code>
+      </div>
+      <div class="algo-item">
+        <strong>Output alphabet (37 chars · prime)</strong>
+        <code>A–Z</code> + <code>0–9</code> + <code>$</code> — catches single-char errors, transpositions, and most multi-char corruptions.
+      </div>
+      <div class="algo-item">
+        <strong>QR symbol</strong>
+        Version 4-Q (33×33 modules, 25% error correction). Fits on a 20×20mm sticker.
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-card">
+    <div class="spec-card-title">
+      v1 format — current production legacy
+      <span class="group-badge group-badge-amber">Phasing out</span>
     </div>
     <div class="spec-code">
 <span class="s-qty">1234</span><span class="s-sku">LTAPLP98765</span><span class="s-po">POFI-12345678</span><span class="s-nav">99</span>-<span class="s-nav">11</span>
@@ -431,128 +533,38 @@
       <div class="spec-legend-item"><div class="spec-dot" style="background:#16a34a"></div>Total boxes (up to 4 digits) · Box # (up to 4 digits)</div>
       <div class="spec-legend-item" style="color:#dc2626"><strong>No check character</strong> — no error detection</div>
     </div>
-    <div class="algo-row">
-      <div class="algo-item">
-        <strong>No validation</strong>
-        No check char, no error detection. A mis-scan or typo will pass through silently.
-      </div>
-      <div class="algo-item">
-        <strong>QR spec</strong>
-        Version 2 · ECC Medium (15%) · Alphanumeric · 38 char capacity
-      </div>
-      <div class="algo-item">
-        <strong>Regex</strong>
-        <code>^(?&lt;qty&gt;\d{1,5})(?&lt;SKU&gt;[A-Z0-9]{7,11})(?&lt;PO&gt;PO[A-Z]{2}-\d{8})(?&lt;totalBoxes&gt;\d{1,4})-(?&lt;boxId&gt;\d{1,4})$</code>
-      </div>
-      <div class="algo-item">
-        <strong>Note</strong>
-        No separator between qty and SKU, or between PO and totalBoxes — fields are distinguished by their fixed patterns.
-      </div>
-    </div>
   </div>
 
   <div class="spec-card">
     <div class="spec-card-title">
-      v3 format
-      <span class="group-badge group-badge-amber">Rollout paused</span>
+      v3 format — deprecated
+      <span class="group-badge group-badge-grey">Deprecated</span>
     </div>
     <div class="spec-code">
 <span class="s-qty">0155</span><span class="s-sku">SMAPLP1829</span><span class="s-po">POFI-00090005</span>-<span class="s-nav">01</span>-<span class="s-nav">15</span>-<span class="s-nav">01</span><span class="s-chk">J</span>
     </div>
     <div class="spec-legend">
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#2563eb"></div>Batch qty — 4 digits, zero-padded</div>
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#7c3aed"></div>SKU — 9–11 chars</div>
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#d97706"></div>PO number — PO + 2 letters + hyphen + 8 digits</div>
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#16a34a"></div>Shipment # · Total boxes · Box # — all 2-digit</div>
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#1a1a2e"></div>Check letter — A–Z or $ % *</div>
-    </div>
-    <div class="algo-row">
-      <div class="algo-item">
-        <strong>Algorithm</strong>
-        <code>acc = (acc × 31 + val(c)) mod 29</code><br>
-        Rolling hash over all chars. Map result to output alphabet.
-      </div>
-      <div class="algo-item">
-        <strong>Output alphabet (29 chars · prime)</strong>
-        <code>A–Z</code> + <code>$</code> <code>%</code> <code>*</code><br>
-        100% detection of single-char errors and adjacent transpositions.
-      </div>
-      <div class="algo-item">
-        <strong>Character values</strong>
-        <code>0–9 → 0–9</code> &nbsp; <code>A–Z → 10–35</code> &nbsp; <code>- → 36</code>
-      </div>
-      <div class="algo-item">
-        <strong>QR spec</strong>
-        Version 2 · ECC Medium (15%) · Alphanumeric · 38 char capacity
-      </div>
+      <div class="spec-legend-item">Mod-29 rolling hash with a single check letter (A–Z + $ % *). Superseded by v4.0 which carries the URL prefix and uses two check chars.</div>
     </div>
   </div>
 
   <div class="spec-card">
     <div class="spec-card-title">
-      v4.0 format — URL, battery sticker (EU compliant)
-      <span class="group-badge group-badge-amber">Draft</span>
-    </div>
-    <div class="spec-code">
-<span class="s-url">HTTPS://QR.SWAPPIE.COM/</span><span class="s-v4po">POFI-00090005</span>-<span class="s-v4sku">SMAPLP1829</span>-<span class="s-v4nav">01</span>-<span class="s-v4nav">15</span>-<span class="s-v4nav">01</span>-<span class="s-v4qty">0155</span>:<span class="s-v4chk">BK</span>
-    </div>
-    <div class="spec-legend">
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#94a3b8"></div>URL prefix — opens browser directly when scanned</div>
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#d97706"></div>PO number — country code first</div>
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#7c3aed"></div>SKU</div>
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#16a34a"></div>Shipment # · Total boxes · Box #</div>
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#2563eb"></div>Batch qty — last field</div>
-      <div class="spec-legend-item"><div class="spec-dot" style="background:#3730a3"></div>Two check chars — A–Z, 0–9, $</div>
-    </div>
-    <div class="algo-row">
-      <div class="algo-item">
-        <strong>Two independent check chars</strong>
-        Char 1: <code>acc = (acc × 31 + val(c)) mod 37</code><br>
-        Char 2: <code>acc = (acc × 17 + val(c)) mod 37</code>
-      </div>
-      <div class="algo-item">
-        <strong>Output alphabet (37 chars · prime)</strong>
-        <code>A–Z</code> + <code>0–9</code> + <code>$</code><br>
-        100% single + double error detection; 99.93% for three+.
-      </div>
-      <div class="algo-item">
-        <strong>Computed over path only</strong>
-        URL prefix excluded — v4.0 and v4.1 produce identical check chars for the same data.
-      </div>
-      <div class="algo-item">
-        <strong>QR spec</strong>
-        Version 4 · ECC Q (25%) · Alphanumeric · 67 char capacity
-      </div>
-    </div>
-  </div>
-
-  <div class="spec-card">
-    <div class="spec-card-title">
-      v4.1 format — no URL (internal traceability only)
-      <span class="group-badge group-badge-amber">Draft</span>
+      v4.1 format — deprecated
+      <span class="group-badge group-badge-grey">Deprecated</span>
     </div>
     <div class="spec-code">
 <span class="s-v4po">POFI-00090005</span>-<span class="s-v4sku">SMAPLP1829</span>-<span class="s-v4nav">01</span>-<span class="s-v4nav">15</span>-<span class="s-v4nav">01</span>-<span class="s-v4qty">0155</span>:<span class="s-v4chk">BK</span>
     </div>
     <div class="spec-legend">
-      <div class="spec-legend-item">Same field structure and check chars as v4.0 — only the URL prefix is removed. For use where codes are scanned by WMS tools or Hemuli only, not by end users or recyclers.</div>
-    </div>
-    <div class="algo-row">
-      <div class="algo-item">
-        <strong>QR spec</strong>
-        Version 3 · ECC Q (25%) · Alphanumeric · 47 char capacity · 5 chars headroom at max SKU length
-      </div>
-      <div class="algo-item">
-        <strong>Check chars</strong>
-        Identical to v4.0 for the same data. Strip URL prefix first if present, then verify with the same algorithm.
-      </div>
+      <div class="spec-legend-item">Same field structure and check chars as v4.0 but without the URL prefix. Replaced by v4.0 once we confirmed the URL prefix doesn't get in the way of internal lot-identifier use.</div>
     </div>
   </div>
 
 </div>
 
 <footer>
-  SP tools · v1 production · v3 paused · v4 draft · <a href="https://github.com/tokurvin/sp-qr-tool" target="_blank">GitHub</a>
+  SP tools · v4.0 canonical · v1 production legacy · v3 / v4.1 deprecated · <a href="https://github.com/tokurvin/sp-qr-tool" target="_blank">GitHub</a>
 </footer>
 
 </body>

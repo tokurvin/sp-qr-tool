@@ -4,6 +4,23 @@ All significant changes to the QR code format, tools, and rollout decisions, new
 
 ---
 
+## 2026-06-09
+
+### OPS scanner testing results documented
+- Vineet Kulkarni (warehousing) + Eric Oja (repair) tested QR V4-Q at multiple sizes and print methods
+- Laser print: passes at all tested sizes (9×9, 10×10, 16×16, 19×19 mm)
+- Thermal print: fails at 10×10 and 15×15 mm on handheld scanners; passes at 19×19 mm
+- Toni tested DYMO LabelWriter 450 (thermal, 300 DPI): iPhone 13 Pro Max read 10×10 mm successfully — phone cameras more tolerant than handheld scanners
+- **Decision confirmed: 20×20 mm sticker spec** — round-number safe margin above 19 mm thermal pass; standard label stock; 0.49 mm/module at QR V4-Q
+
+### GitHub history cleanup
+- Full 66-commit git history pulled to local repo (Dropbox project folder)
+- GitHub `main` branch replaced with single clean commit — only the 13 tool HTML files, no history
+- `.gitignore` added: internal context files permanently excluded from git
+- Local git retains full history; GitHub contains only current tool files
+
+---
+
 ## 2026-05-19
 
 ### index.html restructured — current tools first, deprecated to bottom
@@ -14,6 +31,11 @@ All significant changes to the QR code format, tools, and rollout decisions, new
 - Restored missing tools dropped in restructure: QR Code Checker v4, Battery Data Registration
 - Fixed Battery Info Page Demo link to include example code hash so page shows content on open
 - Battery Data Registration back-link updated to point to index.html instead of ASN generator
+
+### asn-generator-v4.0.html — UUID gate changed to warning-only
+- UUID was blocking download in the 2026-05-12 version
+- Changed to warning-only: download proceeds but shows a warning if UUID is missing
+- Rationale: UUID is optional until the Feb 2027 EU deadline; blocking it now prevents suppliers from generating codes for POs before they’ve registered battery data
 
 ### qr-checker-v4.html — domain corrected
 - URL prefix updated from `HTTPS://QR.SWAPPIE.CLOUD/` to `HTTPS://SP.SWAPPIE.COM/`
@@ -37,8 +59,9 @@ All significant changes to the QR code format, tools, and rollout decisions, new
 
 ### asn-generator-v4.0.html — UUID gate added
 - Added Battery Data UUID field per SKU row
-- Validation gate: UUID required before QR codes can be generated
+- UUID validation gate added — initially blocking (required before download)
 - Link to battery-upload.html for suppliers who need to register data first
+- **Note:** UUID gate changed to warning-only in 2026-05-19 update (see above) — UUID optional until Feb 2027 EU deadline
 
 ---
 

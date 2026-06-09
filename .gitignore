@@ -1,0 +1,10 @@
+# Internal Claude context files — never commit to public repo
+CLAUDE.md
+.claude/
+
+# Local test images
+*.png
+
+# Local reference files
+QR-code_v1-10_capacity.csv
+dfd-eu-qr-v4.md

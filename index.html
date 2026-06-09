@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SP Tools</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f4f6f9;
+    color: #1a1a2e;
+    min-height: 100vh;
+  }
+
+  header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 36px 32px 32px;
+  }
+  .header-inner {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #6366f1;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -.4px;
+    line-height: 1.2;
+  }
+  header p {
+    font-size: 14px;
+    color: rgba(255,255,255,.55);
+    margin-top: 8px;
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  .version-strip {
+    background: #12122a;
+    padding: 10px 32px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .version-strip-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .badge-purple { background: rgba(99,102,241,.2); color: #a5b4fc; }
+  .badge-green  { background: rgba(34,197,94,.15); color: #86efac; }
+  .badge-amber  { background: rgba(251,191,36,.15); color: #fcd34d; }
+  .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .badge-purple .badge-dot { background: #818cf8; }
+  .badge-green  .badge-dot { background: #4ade80; }
+  .badge-amber  .badge-dot { background: #fbbf24; }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 36px 20px 60px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: #94a3b8;
+    margin-bottom: 16px;
+  }
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .tool-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 28px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow .15s, transform .15s, border-color .15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .tool-card:hover {
+    box-shadow: 0 8px 30px rgba(99,102,241,.12);
+    transform: translateY(-2px);
+    border-color: #c7d2fe;
+  }
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .tool-card.purple::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+  .tool-card.green::before  { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .tool-card.amber::before  { background: linear-gradient(90deg, #f59e0b, #d97706); }
+  .tool-card.gray::before   { background: #cbd5e1; }
+
+  .tool-icon {
+    font-size: 28px;
+    margin-bottom: 14px;
+    line-height: 1;
+  }
+
+  .tool-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -.2px;
+    margin-bottom: 6px;
+  }
+
+  .tool-desc {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .tool-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .tool-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #64748b;
+  }
+
+  .tool-arrow {
+    font-size: 18px;
+    color: #cbd5e1;
+    transition: color .15s, transform .15s;
+  }
+  .tool-card:hover .tool-arrow {
+    color: #6366f1;
+    transform: translateX(3px);
+  }
+
+  /* ── Spec section ── */
+  .spec-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+
+  .spec-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #1a1a2e;
+  }
+
+  .spec-code {
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 13px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    letter-spacing: .3px;
+    line-height: 1.8;
+    overflow-x: auto;
+    white-space: nowrap;
+    margin-bottom: 16px;
+  }
+
+  .seg { display: inline; }
+  .s-qty   { color: #2563eb; font-weight: 600; }
+  .s-sku   { color: #7c3aed; font-weight: 600; }
+  .s-po    { color: #d97706; font-weight: 600; }
+  .s-nav   { color: #16a34a; font-weight: 600; }
+  .s-chk   { background: #1a1a2e; color: #fff; border-radius: 3px; padding: 0 4px; font-weight: 700; }
+
+  .spec-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .spec-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: #475569;
+  }
+  .spec-dot {
+    width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0;
+  }
+
+  .algo-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  @media (max-width: 580px) {
+    .algo-row { grid-template-columns: 1fr; }
+    .tools-grid { grid-template-columns: 1fr; }
+  }
+
+  .algo-item {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.6;
+  }
+  .algo-item strong { color: #1a1a2e; display: block; margin-bottom: 3px; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+  .algo-item code {
+    font-family: "SF Mono", "Fira Code", monospace;
+    background: #e2e8f0;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  /* ── Deprecated section ── */
+  .section-title.deprecated {
+    color: #f87171;
+  }
+
+  .tool-card.deprecated-card {
+    opacity: .65;
+    border-style: dashed;
+  }
+  .tool-card.deprecated-card:hover {
+    opacity: .85;
+    box-shadow: none;
+    transform: none;
+    border-color: #cbd5e1;
+  }
+
+  .deprecated-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    background: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-bottom: 10px;
+  }
+
+  footer {
+    border-top: 1px solid #e2e8f0;
+    padding: 20px 32px;
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+  footer a { color: #6366f1; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-eyebrow">SP Tools</div>
+    <h1>Spare Parts QR Tools</h1>
+    <p>Tools for generating and validating spare parts LOT labels. Current spec: v4 (URL-based, EU Battery Regulation compliant). v1 format remains in production during transition — v3 was planned but never deployed.</p>
+  </div>
+</header>
+
+<div class="version-strip">
+  <div class="version-strip-inner">
+    <span class="badge badge-purple"><span class="badge-dot"></span>Current: v4 · MOD 37 · dual check</span>
+    <span class="badge badge-green"><span class="badge-dot"></span>EU 2023/1542 compliant</span>
+    <span class="badge badge-amber"><span class="badge-dot"></span>v1 in production · transitioning to v4</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ══════════════════════════════════
+       CURRENT TOOLS
+  ══════════════════════════════════ -->
+  <div class="section-title">Current Tools</div>
+
+  <div class="tools-grid">
+
+    <a href="qr-checker-v4.html" class="tool-card purple">
+      <div class="tool-icon">🔎</div>
+      <div class="tool-title">QR Code Checker v4</div>
+      <div class="tool-desc">
+        Validate or generate individual v4.0 QR codes. Paste a code to verify the dual check characters, or enter the fields manually to generate a new code with a live preview.
+      </div>
+      <div class="tool-footer">
+        <div class="tool-tags">
+          <span class="tag">v4 format</span>
+          <span class="tag">Validate</span>
+          <span class="tag">Generate</span>
+        </div>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="asn-generator-v4.0.html" class="tool-card purple">
+      <div class="tool-icon">📦</div>
+      <div class="tool-title">ASN Generator v4.0</div>
+      <div class="tool-desc">
+        Generate v4 QR codes for a full shipment. Produces URL-based codes (<code style="font-size:11px">HTTPS://SP.SWAPPIE.COM/…</code>) with dual check characters. EU Battery Regulation compliant. Downloadable as Excel or CSV.
+      </div>
+      <div class="tool-footer">
+        <div class="tool-tags">
+          <span class="tag">v4 format</span>
+          <span class="tag">Multi-SKU</span>
+          <span class="tag">Excel / CSV</span>
+        </div>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="battery.html#POFI-00088285-SMAPLP1003-01-05-03-0010:BK" class="tool-card green">
+      <div class="tool-icon">🔋</div>
+      <div class="tool-title">Battery Info Page — Demo</div>
+      <div class="tool-desc">
+        Preview of the consumer-facing EU Battery Regulation landing page. Opens with an example v4 code pre-loaded — chemistry, capacity, carbon footprint, recycling instructions. Replace the hash in the URL with any generated code to preview your own.
+      </div>
+      <div class="tool-footer">
+        <div class="tool-tags">
+          <span class="tag">EU 2023/1542</span>
+          <span class="tag">Demo</span>
+          <span class="tag">Consumer page</span>
+        </div>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="battery-upload.html" class="tool-card amber">
+      <div class="tool-icon">📂</div>
+      <div class="tool-title">Battery Data Registration</div>
+      <div class="tool-desc">
+        Supplier portal for submitting battery specification data per SKU — chemistry, capacity, carbon footprint, lifespan, recycled content, compliance declarations. Generates a UUID used in the packaging QR code.
+      </div>
+      <div class="tool-footer">
+        <div class="tool-tags">
+          <span class="tag">EU 2023/1542</span>
+          <span class="tag">Supplier portal</span>
+          <span class="tag">UUID</span>
+        </div>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- ══════════════════════════════════
+       CURRENT FORMAT REFERENCE
+  ══════════════════════════════════ -->
+  <div class="section-title">Code Format Reference — Current (v4)</div>
+
+  <div class="spec-card">
+    <div class="spec-title">v4 Format — URL-based · EU Battery Regulation compliant</div>
+
+    <div class="spec-code">
+<span style="color:#94a3b8;font-weight:400">HTTPS://SP.SWAPPIE.COM/</span><span class="s-po">POFI</span>-<span class="s-po">00088285</span>-<span class="s-sku">SMAPLP1003</span>-<span class="s-nav">01</span>-<span class="s-nav">05</span>-<span class="s-nav">03</span>-<span class="s-qty">0010</span>:<span class="s-chk">BK</span>
+    </div>
+
+    <div class="spec-legend">
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#94a3b8"></div>URL prefix — domain TBD; stripped by Hemuli &amp; WMS before parsing</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#d97706"></div>PO country + PO number — 2-letter country code + hyphen + 8 digits</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#7c3aed"></div>SKU — SM/TB/LT + APLP + 1–5 digits</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#16a34a"></div>Shipment # · Total boxes · Box # · Qty — all hyphen-separated</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#1a1a2e"></div>Two check characters — colon-separated, A–Z + 0–9 + $</div>
+    </div>
+
+    <div class="algo-row">
+      <div class="algo-item">
+        <strong>Algorithm</strong>
+        <code>C1 = hash(path, 31) mod 37</code><br>
+        <code>C2 = hash(path, 17) mod 37</code><br>
+        Hash runs left to right over the path (after the URL prefix, before <code>:</code>).
+      </div>
+      <div class="algo-item">
+        <strong>Output alphabet (37 chars)</strong>
+        <code>A–Z</code> + <code>0–9</code> + <code>$</code><br>
+        Two independent check characters detect all single-char errors and adjacent transpositions.
+      </div>
+      <div class="algo-item">
+        <strong>Character values</strong>
+        <code>0–9 → 0–9</code> &nbsp; <code>A–Z → 10–35</code> &nbsp; <code>- → 36</code><br>
+        URL prefix is excluded from check computation. Only the path data is hashed.
+      </div>
+      <div class="algo-item">
+        <strong>QR spec</strong>
+        Version 4-Q · 25% error correction · fits 20×20 mm sticker<br>
+        Domain length is constrained to ≤16 chars to stay within QR capacity.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       v1 FORMAT REFERENCE
+       Still in production — no tools, scanners must continue to accept it
+  ══════════════════════════════════ -->
+  <div class="section-title" style="margin-top:8px">Code Format Reference — v1 (currently in production · no tooling · phasing out)</div>
+
+  <div class="spec-card">
+    <div class="spec-title">v1 Format — no check digit · plain text · still scanned in Hemuli &amp; NetSuite</div>
+
+    <div class="spec-code">
+<span class="s-qty">1234</span>-<span class="s-sku">LTAPLP12345</span><span class="s-po">POFI</span>-<span class="s-po">87654321</span>-<span class="s-nav">01</span>-<span class="s-nav">98</span>-<span class="s-nav">12</span>
+    </div>
+
+    <div class="spec-legend">
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#2563eb"></div>Batch qty — 4 digits, zero-padded</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#7c3aed"></div>SKU — 9–11 chars, starts with letter (hyphen-separated from qty)</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#d97706"></div>PO country + PO number — 2-letter code + 8 digits (no hyphen between them)</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#16a34a"></div>Shipment # · Total boxes · Box # — all 2-digit, hyphen-separated</div>
+      <div class="spec-legend-item"><div class="spec-dot" style="background:#e2e8f0"></div>No check character — no error detection</div>
+    </div>
+
+    <div class="algo-row">
+      <div class="algo-item">
+        <strong>Validation regex</strong>
+        <code>^\d{4}-[A-Z][A-Z0-9]{8,10}[A-Z]{2}\d{8}-\d{2}-\d{2}-\d{2}$</code>
+      </div>
+      <div class="algo-item">
+        <strong>Status</strong>
+        Placed on batteries by suppliers since rollout. Hemuli and NetSuite/WMS must continue to accept this format throughout the v4 transition. No new codes should be generated in this format.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       DEPRECATED
+  ══════════════════════════════════ -->
+  <div class="section-title deprecated" style="margin-top:8px">Deprecated</div>
+
+  <div class="tools-grid">
+
+    <a href="qr-checker.html" class="tool-card gray deprecated-card">
+      <div class="deprecated-badge">Deprecated</div>
+      <div class="tool-icon">🔍</div>
+      <div class="tool-title">QR Code Checker — v3</div>
+      <div class="tool-desc">
+        Built for the v3 format (check letter, MOD 29). v3 was never deployed to production — superseded by v4 before rollout. Kept for reference.
+      </div>
+      <div class="tool-footer">
+        <div class="tool-tags">
+          <span class="tag">v3 · never deployed</span>
+          <span class="tag">Reference only</span>
+        </div>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="asn-generator.html" class="tool-card gray deprecated-card">
+      <div class="deprecated-badge">Deprecated</div>
+      <div class="tool-icon">📦</div>
+      <div class="tool-title">ASN Generator — v3</div>
+      <div class="tool-desc">
+        Built for the v3 format. v3 was deprecated when EU Battery Regulation requirements made clear a URL-based format (v4) was needed. Use ASN Generator v4.0 instead.
+      </div>
+      <div class="tool-footer">
+        <div class="tool-tags">
+          <span class="tag">v3 · never deployed</span>
+          <span class="tag">Reference only</span>
+        </div>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="asn-generator-v4.1.html" class="tool-card gray deprecated-card">
+      <div class="deprecated-badge">Deprecated</div>
+      <div class="tool-icon">📦</div>
+      <div class="tool-title">ASN Generator v4.1</div>
+      <div class="tool-desc">
+        Intermediate v4.1 prototype, superseded by v4.0. Kept for reference. Use ASN Generator v4.0 for all new shipments.
+      </div>
+      <div class="tool-footer">
+        <div class="tool-tags">
+          <span class="tag">v4.1 prototype</span>
+          <span class="tag">Reference only</span>
+        </div>
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+</div>
+
+<footer>
+  SP tools v4.0 · <a href="https://github.com/tokurvin/sp-qr-tool" target="_blank">GitHub</a>
+</footer>
+
+</body>
+</html>

@@ -1,10 +1,23 @@
-# Internal Claude context files — never commit to public repo
+# ─────────────────────────────────────────────────────────────
+# Local-only working files — never commit to the public repo.
+# The public site = the HTML tools + 404.html only.
+# See LOCAL_FOLDER_GUIDE.md for the full layout.
+# ─────────────────────────────────────────────────────────────
+
+# Claude Code context (must stay at repo root to be auto-loaded)
 CLAUDE.md
 .claude/
 
-# Local test images
-*.png
+# Internal docs: README, CHANGELOG, spec, DFD
+local-docs/
 
-# Local reference files
+# QR sample/test images + capacity reference CSV
+qr-assets/
+
+# Local orientation guide for this folder
+LOCAL_FOLDER_GUIDE.md
+
+# Safety catch-alls for stray local assets at repo root
+*.png
 QR-code_v1-10_capacity.csv
 dfd-eu-qr-v4.md

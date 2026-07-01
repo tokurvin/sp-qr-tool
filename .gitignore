@@ -14,6 +14,12 @@ local-docs/
 # QR sample/test images + capacity reference CSV
 qr-assets/
 
+# Stakeholder deck + its generator
+presentation/
+
+# Full-history git bundle(s) — local safety archive, not for the public repo
+archive/
+
 # Local orientation guide for this folder
 LOCAL_FOLDER_GUIDE.md
 
